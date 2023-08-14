@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+
+<div th:fragment="header">
+  <div class="bg-blue-500 text-white py-4">
+    <div class="container mx-auto flex justify-between items-center px-4">
+      <div class="text-xl font-bold">E-commerce Shop</div>
+      <ul class="flex space-x-4">
+        <li><a class="hover:text-gray-300" href="#">Home</a></li>
+        <li><a class="hover:text-gray-300" href="#">Products</a></li>
+        <li><a class="hover:text-gray-300" href="#">Categories</a></li>
+        <li><a class="hover:text-gray-300" href="#">Orders</a></li>
+        <li><a class="hover:text-gray-300" href="#">About Us</a></li>
+        <li><a class="hover:text-gray-300" href="#">Contact</a></li>
+      </ul>
+      <div class="flex-grow mx-4">
+        <input class="search-input p-2 rounded-full border border-gray-300 bg-white text-black focus:outline-none" type="text" placeholder="Search...">
+      </div>
+      <div class="space-x-2">
+        <a class="hover:text-gray-300" href="#">Login</a>
+        <div th:fragment="logout" class="logout" sec:authorize="isAuthenticated()">
+          Logged in user: <span sec:authentication="name"></span> |
+          Roles: <span sec:authentication="principal.authorities"></span>
+          <div>
+            <form action="#" th:action="@{/logout}" method="post">
+              <input type="submit" value="Logout" />
+            </form>
+          </div>
+        </div>
+        <a class="hover:text-gray-300" href="#">Register</a>
+        <a class="hover:text-gray-300" href="#">Cart</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

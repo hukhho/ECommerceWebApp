@@ -1,0 +1,28 @@
+spring:
+
+  flyway:
+    enabled: true
+  jooq:
+    sql-dialect: Postgres
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/shoestore?loggerLevel=OFF
+    username: postgres
+    password: postgres
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+
+
+cloud:
+    aws:
+    region:
+      main: us-east-2
+    credentials:
+      access-key: AKIA3XFLAEUIOGUTMHFX
+      secret-key: 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
+    end-point:
+      uri: "http://www.foo.com"
+
