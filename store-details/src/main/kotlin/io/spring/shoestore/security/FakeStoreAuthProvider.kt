@@ -12,7 +12,6 @@ class FakeStoreAuthProvider: StoreAuthProvider {
 
     private var currentUser: PrincipalUser? = null
 
-
     override fun getCurrentUser(): PrincipalUser {
         if (currentUser == null) {
             throw RuntimeException("No logged in user")
@@ -20,9 +19,6 @@ class FakeStoreAuthProvider: StoreAuthProvider {
         return currentUser!!
     }
 
-    /**
-     * For testing purposes, login some user for testing
-     */
     fun login(user: PrincipalUser) {
         this.currentUser = user
     }

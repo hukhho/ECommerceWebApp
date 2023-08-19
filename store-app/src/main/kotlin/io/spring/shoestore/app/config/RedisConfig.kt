@@ -10,7 +10,6 @@ import redis.clients.jedis.Jedis
 
 @Configuration
 class RedisConfig {
-
     @Bean
     fun jedisConnectionFactory(
         @Value("\${spring.data.redis.host}") redisHost: String,
@@ -26,5 +25,7 @@ class RedisConfig {
     fun getJedisClient(connectionFactory: JedisConnectionFactory): Jedis {
         return connectionFactory.connection.nativeConnection as Jedis
     }
+
+
 
 }

@@ -1,12 +1,12 @@
 package io.spring.shoestore.app.config
 
-import org.springframework.security.core.userdetails.UserDetailsService
-import org.springframework.security.core.userdetails.User
-import org.springframework.security.core.userdetails.UserDetails
-import org.springframework.security.core.userdetails.UsernameNotFoundException
-import org.springframework.security.crypto.password.PasswordEncoder
 import io.spring.shoestore.core.users.UserRepository
 import org.slf4j.LoggerFactory
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.core.userdetails.UsernameNotFoundException
+import org.springframework.security.crypto.password.PasswordEncoder
 
 class UserDetailsServiceImpl(
     private val userRepository: UserRepository,
@@ -20,10 +20,12 @@ class UserDetailsServiceImpl(
         val user = userRepository.findByUsername(username)
             ?: throw UsernameNotFoundException("User not found: $username")
 
-        return User.builder()
-            .username(user.username)
-            .password(user.password)
-            .authorities(user.roleID)
-            .build()
+        return CustomUserDetails(
+            username = user.username,
+            password = user.password,
+            email = user.email,
+            userID = user.id,
+            authorities = listOf(SimpleGrantedAuthority(user.roleID.toString()))
+        )
     }
 }

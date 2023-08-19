@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Create Product</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-8">
+<div class="bg-white p-6 rounded shadow w-full max-w-3xl mx-auto">
+  <h2 class="text-3xl font-bold mb-6 text-center">Create Product</h2>
+  <form th:action="@{/product}" th:object="${product}" method="post">
+    <!-- Product ID (Hidden as it's auto-generated) -->
+    <input type="hidden" th:field="*{id.value}">
+
+    <!-- Category ID -->
+    <div class="mb-4">
+      <label for="categoryID" class="block text-sm font-medium text-gray-700">Category ID</label>
+      <select id="categoryID" th:field="*{categoryID}" class="mt-1 p-2 w-full border rounded-md">
+        <option th:each="category : ${categories}" th:value="${category.id.value}" th:text="${category.name}"></option>
+      </select>
+    </div>
+
+    <!-- Product Code -->
+    <div class="mb-4">
+      <label for="productCode" class="block text-sm font-medium text-gray-700">Product Code</label>
+      <input type="text" id="productCode" th:field="*{productCode}" class="mt-1 p-2 w-full border rounded-md">
+    </div>
+
+    <!-- Name -->
+    <div class="mb-4">
+      <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+      <input type="text" id="name" th:field="*{name}" class="mt-1 p-2 w-full border rounded-md">
+    </div>
+
+    <!-- Description -->
+    <div class="mb-4">
+      <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+      <textarea id="description" th:field="*{description}" rows="4" class="mt-1 p-2 w-full border rounded-md"></textarea>
+    </div>
+
+    <!-- Image URL -->
+    <div class="mb-4">
+      <label for="imageURL" class="block text-sm font-medium text-gray-700">Image URL</label>
+      <input type="text" id="imageURL" th:field="*{imageURL}" class="mt-1 p-2 w-full border rounded-md">
+    </div>
+
+    <!-- Price -->
+    <div class="mb-4">
+      <label for="price" class="block text-sm font-medium text-gray-700">Price</label>
+      <input type="number" id="price" th:field="*{price}" step="0.01" class="mt-1 p-2 w-full border rounded-md">
+    </div>
+
+    <!-- Submit Button -->
+    <div class="mt-6">
+      <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Create</button>
+    </div>
+  </form>
+</div>
+</body>
+</html>

@@ -3,14 +3,10 @@ package io.spring.shoestore.app.config
 import io.spring.shoestore.core.users.UserRepository
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
-import org.springframework.security.core.userdetails.User
-import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.security.web.SecurityFilterChain
 @Configuration
 @EnableWebSecurity
@@ -20,22 +16,26 @@ class SecurityConfig {
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http.authorizeRequests()
             .requestMatchers("/css/**").permitAll()
-            .requestMatchers("/user/**").hasAuthority("ROLE_USER")
-            .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+            .requestMatchers("/user/**").hasAuthority("US")
+            .requestMatchers("/admin/**").hasAuthority("AD")
             .and()
             .formLogin().loginPage("/log-in")
+            .successHandler(customAuthenticationSuccessHandler())
+            .failureHandler(customAuthenticationFailureHandler())
+
+        http.exceptionHandling()
+            .accessDeniedPage("/error")
         return http.build()
     }
+    @Bean
+    fun customAuthenticationSuccessHandler(): CustomAuthenticationSuccessHandler {
+        return CustomAuthenticationSuccessHandler()
+    }
+    @Bean
+    fun customAuthenticationFailureHandler(): CustomAuthenticationFailureHandler {
+        return CustomAuthenticationFailureHandler()
+    }
 
-//    @Bean
-//    fun userDetailsService(): UserDetailsService {
-//        val userDetails = User.withDefaultPasswordEncoder()
-//            .username("user")
-//            .password("password")
-//            .roles("USER")
-//            .build()
-//        return InMemoryUserDetailsManager(userDetails)
-//    }
 
     @Bean
     fun passwordEncoder(): PasswordEncoder {

@@ -11,7 +11,6 @@ allprojects {
 	apply(plugin = "org.jetbrains.kotlin.jvm")
 	apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 
-
 	group = "io.spring"
 	version = "0.1.0-SNAPSHOT"
 
@@ -41,12 +40,12 @@ subprojects {
 	extra["testcontainersVersion"] = "1.17.6"
 	extra["junitVersion"] = "5.9.2"
 
-
-
 	dependencies {
 		implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
 		implementation("org.flywaydb:flyway-core:9.16.3")
 		implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.20")
+		implementation("javax.validation:validation-api:2.0.1.Final")
+		implementation("org.hibernate.validator:hibernate-validator:6.1.5.Final")
 
 		testImplementation("org.junit.jupiter:junit-jupiter-api:${project.extra["junitVersion"]}")
 		testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${project.extra["junitVersion"]}")

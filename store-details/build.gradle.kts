@@ -6,5 +6,4 @@ dependencies {
     implementation(libs.jedis)
     implementation(platform("software.amazon.awssdk:bom:2.20.26"))
     implementation("software.amazon.awssdk:dynamodb")
-
 }

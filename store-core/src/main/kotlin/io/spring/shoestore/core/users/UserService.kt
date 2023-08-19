@@ -3,6 +3,7 @@ package io.spring.shoestore.core.users
 class UserService(private val repository: UserRepository) {
 
     // parse query
+    fun getByUsername(username: String): User? = repository.findByUsername(username)
 
     fun get(id: UserId): User? = repository.findById(id)
 

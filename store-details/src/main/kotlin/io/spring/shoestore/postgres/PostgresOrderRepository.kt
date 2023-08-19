@@ -2,71 +2,214 @@ package io.spring.shoestore.postgres
 
 import io.spring.shoestore.core.orders.Order
 import io.spring.shoestore.core.orders.OrderRepository
-import io.spring.shoestore.core.security.PrincipalUser
-import io.spring.shoestore.core.variants.InventoryItem
-import io.spring.shoestore.postgres.mappers.LineItemMapper
-import io.spring.shoestore.postgres.mappers.OrderMapper
+import io.spring.shoestore.core.orders.OrderWithPayment
+import io.spring.shoestore.core.orders.StockInsufficientException
+import io.spring.shoestore.core.users.UserId
+import io.spring.shoestore.postgres.mappers.*
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.transaction.annotation.Transactional
 import java.sql.PreparedStatement
 import java.sql.Timestamp
+import java.util.*
 
-class PostgresOrderRepository(private val jdbcTemplate: JdbcTemplate): OrderRepository {
+
+open class PostgresOrderRepository(private val jdbcTemplate: JdbcTemplate): OrderRepository {
 
     private val orderMapper = OrderMapper()
     private val lineItemMapper = LineItemMapper()
+    private val lineItemDetailsMapper = LineItemDetailsMapper()
 
-    override fun submitOrder(order: Order) {
-        log.info("Persisting order ${order} -> ${order.price}")
-        order.getItems().forEach {
-            log.info("${it.sku} at ${it.pricePer} each. Serials are: ${it.inventoryItems.map{s -> s.serialNumber}}")
-        }
-        // insert into orders, then insert each item into order_line_items
-        jdbcTemplate.update("insert into orders (id, user_email, time_placed, total_price) values (?, ?, ?, ?)",
-            order.id,
-            order.user.email,
-            Timestamp.from(order.time),
-            order.price
-            )
-        jdbcTemplate.batchUpdate("insert into order_line_items (order_id, position, sku, price_per, serial_numbers) " +
-                "values (?, ?, ?, ?, ?);",
-            object: BatchPreparedStatementSetter {
+    private val paymentMapper = PaymentMapper()
 
-                override fun setValues(ps: PreparedStatement, i: Int) {
-                    val lineItem = order.getItems()[i]
-                    val serials = lineItem.inventoryItems.map {it.serialNumber}.toTypedArray()
-                    ps.setObject(1, order.id)
-                    ps.setInt(2, i)
-                    ps.setString(3, lineItem.sku.value)
-                    ps.setInt(4, lineItem.pricePer)
-                    ps.setArray(5, jdbcTemplate.dataSource!!.connection.createArrayOf("text", serials))
+    @Transactional
+    override fun submitOrder(order: Order): Boolean {
+        return try {
+            // 1. Determine the Products and Quantities Ordered
+            val orderedItems = order.getItems()
+
+            // 2. Update the Product Variant Table
+            for (item in orderedItems) {
+                val sku = item.sku.value
+                val orderedQuantity = item.quantity
+
+                // Check if there's enough stock
+                val currentQuantity = jdbcTemplate.queryForObject(
+                    "SELECT quantityAvailable FROM tbl_Product_Variation WHERE sku = ?",
+                    Int::class.java,
+                    sku
+                ) ?: 0
+
+                if (currentQuantity < orderedQuantity) {
+                    throw StockInsufficientException("Not enough stock for SKU: $sku")
                 }
 
-                override fun getBatchSize(): Int = order.getItems().size
-        })
-    }
 
-    override fun listOrdersForUser(user: PrincipalUser): List<Order> {
-        // first grab the orders
-        val orders = jdbcTemplate.query("select o.*, ?, ? from orders o  where o.user_email = ?", orderMapper, user.name, user.email, user.email)
-        val lookup = orders.associateBy { it.id }
-
-        val items = jdbcTemplate.query("select li.* from order_line_items li, orders o  where li.order_id = o.id and o.user_email = ? order by o.id, li.position asc",
-            lineItemMapper,
-            user.email
-        )
-        items.forEach {li ->
-            lookup[li.orderId]?.let { order ->
-                order.addItem(li.sku, li.pricePer, li.serialNumbers.map { InventoryItem(it) })
+                // Decrease the quantityAvailable
+//                jdbcTemplate.update(
+//                    "UPDATE tbl_Product_Variation SET quantityAvailable = quantityAvailable - ? WHERE sku = ?",
+//                    orderedQuantity,
+//                    sku
+//                )
             }
+
+            // Persist the order
+            jdbcTemplate.update(
+                "INSERT INTO tbl_Order (id, userID, orderDate, status, receiverName, receiverPhone, note, shippingStreet, shippingWard, shippingDistrict, shippingProvince, productCost, taxAmount, shippingCost, totalAmount, shippingDate, carrier, trackingNumber) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                order.id,
+                order.userID,
+                Timestamp.from(order.orderDate),
+                order.orderStatus.description,
+                order.receiverName,
+                order.receiverPhone,
+                order.note,
+                order.shippingStreet,
+                order.shippingWard,
+                order.shippingDistrict,
+                order.shippingProvince,
+                order.productCost,
+                order.taxAmount,
+                order.shippingCost,
+                order.totalAmount,
+                order.shippingDate?.let { Timestamp.from(it) },
+                order.carrier,
+                order.trackingNumber
+            )
+
+            // Persist the line items
+            jdbcTemplate.batchUpdate(
+                "INSERT INTO tbl_Order_Item (orderID, sku, quantity, subtotal) VALUES (?, ?, ?, ?)",
+                object : BatchPreparedStatementSetter {
+                    override fun setValues(ps: PreparedStatement, i: Int) {
+                        val lineItem = order.getItems()[i]
+                        ps.setObject(1, order.id)
+                        ps.setString(2, lineItem.sku.value)
+                        ps.setInt(3, lineItem.quantity)
+                        ps.setBigDecimal(4, lineItem.subtotal)
+                    }
+
+                    override fun getBatchSize(): Int = order.getItems().size
+                }
+            )
+            true
+        } catch (e: Exception) {
+            log.error("Error while submitting order", e)
+            false
         }
-        return orders
     }
+
+    @Transactional(readOnly = true)
+    override fun listOrdersForUser(userId: UserId): List<Order> {
+        try {
+            // Fetch the orders for the user
+            val orders = jdbcTemplate.query(
+                "SELECT o.* FROM tbl_Order o WHERE o.userID = ?",
+                orderMapper,
+                userId.value
+            )
+            val lookup = orders.associateBy { it.id }
+
+            val items = mutableListOf<LineItemRow>()
+
+            lookup.keys.forEach { orderId ->
+                items.addAll(
+                    jdbcTemplate.query(
+                        "SELECT  li.orderID,  li.sku, li.quantity, pv.label, pv.size, pv.color, p.*, p.price AS pricePerItem, li.subtotal" +
+                                " FROM  tbl_Order_Item li" +
+                                " JOIN  tbl_Product_Variation pv ON li.sku = pv.sku" +
+                                " JOIN  tbl_Product p ON pv.productID = p.id" +
+                                " WHERE  li.orderID = ? ORDER BY  li.orderID;",
+                        lineItemMapper,
+                        orderId
+                    )
+                )
+            }
+
+            // Add the line items to their corresponding orders
+            items.forEach { li ->
+                lookup[li.orderId]?.let { order ->
+                    order.addItem(sku = li.sku, pricePer = li.pricePerItem, quantity = li.quantity)
+                }
+            }
+            return orders
+        } catch (e: Exception) {
+            log.error("Error while fetching orders for user", e)
+            throw e
+        }
+    }
+
+
+    @Transactional(readOnly = true)
+    override fun getOrderById(orderId: UUID): OrderWithPayment? {
+        try {
+            // Fetch the order by its ID
+            val order = jdbcTemplate.queryForObject(
+                "SELECT o.* FROM tbl_Order o WHERE o.id = ?",
+                orderMapper,
+                orderId
+            ) ?: return null
+
+            // Fetch the line items for the order
+            val itemDetails = jdbcTemplate.query(
+                "SELECT li.orderID, li.sku, li.quantity, p.price AS pricePerItem, li.subtotal," +
+                        " p.*, pv.*, cat.name AS categoryName" +
+                        " FROM tbl_Order_Item li" +
+                        " JOIN tbl_Product_Variation pv ON li.sku = pv.sku" +
+                        " JOIN tbl_Product p ON pv.productID = p.id" +
+                        " JOIN tbl_Category cat ON p.categoryID = cat.id " +
+                        "WHERE li.orderID = ? " +
+                        "ORDER BY li.orderID;",
+                lineItemDetailsMapper,
+                orderId
+            )
+
+            itemDetails.forEach { li ->
+                order.addItemDetails(
+                    sku = li.sku,
+                    product = li.product,
+                    label = li.label,
+                    size = li.size,
+                    color = li.color,
+                    pricePer = li.pricePerItem,
+                    quantity = li.quantity
+                )
+            }
+
+            // Fetch the payment details for the order
+            val payments = jdbcTemplate.query(
+                "SELECT p.* FROM tbl_Payment p WHERE p.orderID = ?",
+                paymentMapper,
+                orderId
+            )
+
+            return OrderWithPayment(order, payments)
+        } catch (e: Exception) {
+            log.error("Error while fetching order by ID", e)
+            throw e
+        }
+    }
+
 
     override fun removeAllOrders() {
         jdbcTemplate.update("delete from order_line_items;")
         jdbcTemplate.update("delete from orders;")
+    }
+
+    override fun getCurrentInventory(sku: String): Int {
+        return jdbcTemplate.queryForObject(
+            "SELECT quantityAvailable FROM tbl_Product_Variation WHERE sku = ?",
+            Int::class.java,
+            sku
+        ) ?: 0
+    }
+
+    override fun updateInventory(sku: String, quantity: Int): Boolean {
+        return jdbcTemplate.update(
+            "UPDATE tbl_Product_Variation SET quantityAvailable = quantityAvailable + ? WHERE sku = ?",
+            quantity,
+            sku
+        ) > 0
     }
 
     companion object {

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+
+<head>
+  <title>Checkout</title>
+  <meta charset="utf-8" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/main.css" th:href="@{/css/main.css}" />
+</head>
+
+<body class="bg-gray-100 py-10">
+<div class="container mx-auto px-4">
+  <table class="min-w-full bg-white border rounded-lg overflow-hidden">
+    <tbody>
+    <tr th:each="cartItem : ${cartItems}" class="border-b">
+      <td class="product-cell p-4">
+        <div class="product-details flex items-center">
+          <img class="product-image w-20 h-20 object-cover mr-4" th:src="${cartItem?.product?.imageURL}" alt="Product Image">
+          <div class="product-name" th:text="${cartItem?.product?.name}">Product Name</div>
+        </div>
+      </td>
+      <td class="product-cell p-4">
+        <div class="product-details">
+          <div class="product-color" th:text="${cartItem?.color}">Color</div>
+        </div>
+      </td>
+      <td class="product-cell p-4">
+        <div class="product-details">
+          <div class="product-size" th:text="${cartItem?.size}">Size</div>
+        </div>
+      </td>
+      <td class="product-cell p-4">
+        <input class="product-quantity p-2 border rounded" type="number" th:value="${cartItem.quantity}" name="quantity" readonly="">
+      </td>
+      <td class="product-cell p-4">
+        <div class="product-price">
+          $<span th:text="${#numbers.formatDecimal(cartItem?.product?.price, 2, 'POINT', 2, 'COMMA')}">0.00</span> each
+        </div>
+      </td>
+      <td class="product-cell p-4">
+        <div class="product-total">
+          Total: $<span th:text="${#numbers.formatDecimal(cartItem?.product?.price * cartItem?.quantity, 2, 'POINT', 2, 'COMMA')}">0.00</span>
+        </div>
+      </td>
+    </tr>
+    </tbody>
+    <tfoot>
+    <tr>
+      <td colspan="5" class="text-right pr-4">Total:</td>
+      <td class="product-cell p-4">
+        $<span th:text="${#numbers.formatDecimal(grandTotal, 2, 'POINT', 2, 'COMMA')}">0.00</span>
+      </td>
+    </tr>
+    </tfoot>
+
+
+
+
+  </table>
+
+  <form th:action="@{/place-order}" method="post" th:object="${shippingDetails}" class="mt-10 bg-white p-6 rounded-lg shadow-md">
+    <!-- Receiver Details -->
+    <h2 class="text-2xl font-bold mb-4">Receiver Details</h2>
+
+    <!-- Receiver Name Field -->
+    <div class="mb-4">
+      <label for="receiverName" class="block text-sm font-medium mb-2">
+        Name: <span th:if="${#fields.hasErrors('receiverName')}" class="text-red-500">*</span>
+      </label>
+      <input type="text"
+             id="receiverName"
+             name="receiverName"
+             th:value="${shippingDetails != null ? shippingDetails.receiverName : ''}"
+             th:class="|${#fields.hasErrors('receiverName') ? 'border-red-500' : ''} p-2 w-full border rounded|"/>
+      <span th:if="${#fields.hasErrors('receiverName')}" th:errors="*{receiverName}" class="text-red-500 text-xs mt-1"></span>
+    </div>
+
+
+    <!-- Receiver Phone Field -->
+    <div class="mb-4">
+      <label for="receiverPhone" class="block text-sm font-medium mb-2">
+        Phone: <span th:if="${#fields.hasErrors('receiverPhone')}" class="text-red-500">*</span>
+      </label>
+      <input type="text"
+             id="receiverPhone"
+             name="receiverPhone"
+             th:value="${shippingDetails != null ? shippingDetails.receiverPhone : ''}"
+             th:class="|${#fields.hasErrors('receiverPhone') ? 'border-red-500' : ''} p-2 w-full border rounded|"/>
+      <span th:if="${#fields.hasErrors('receiverPhone')}" th:errors="*{receiverPhone}" class="text-red-500 text-xs mt-1"></span>
+    </div>
+
+
+    <!-- Note Field -->
+    <div class="mb-4">
+      <label for="note" class="block text-sm font-medium mb-2">
+        Note: <span th:if="${#fields.hasErrors('note')}" class="text-red-500">*</span>
+      </label>
+      <textarea id="note"
+                name="note"
+                th:text="${shippingDetails != null ? shippingDetails.note : ''}"
+                th:class="${#fields.hasErrors('note') ? 'border-red-500' : ''} + ' p-2 w-full border rounded'"></textarea>
+      <span th:if="${#fields.hasErrors('note')}" th:errors="*{note}" class="text-red-500 text-xs mt-1"></span>
+    </div>
+
+
+    <!-- Shipping Details -->
+    <h2 class="text-2xl font-bold mb-4 mt-6">Shipping Details</h2>
+
+    <!-- Shipping Street Field -->
+    <div class="mb-4">
+      <label for="shippingStreet" class="block text-sm font-medium mb-2">
+        Street: <span th:if="${#fields.hasErrors('shippingStreet')}" class="text-red-500">*</span>
+      </label>
+      <input type="text"
+             id="shippingStreet"
+             name="shippingStreet"
+             th:value="${shippingDetails != null ? shippingDetails.shippingStreet : ''}"
+             th:class="|${#fields.hasErrors('shippingStreet') ? 'border-red-500' : ''} p-2 w-full border rounded|"/>
+      <span th:if="${#fields.hasErrors('shippingStreet')}" th:errors="*{shippingStreet}" class="text-red-500 text-xs mt-1"></span>
+    </div>
+
+
+    <!-- Shipping Ward Field -->
+    <div class="mb-4">
+      <label for="shippingWard" class="block text-sm font-medium mb-2">
+        Ward: <span th:if="${#fields.hasErrors('shippingWard')}" class="text-red-500">*</span>
+      </label>
+      <input type="text"
+             id="shippingWard"
+             name="shippingWard"
+             th:value="${shippingDetails != null ? shippingDetails.shippingWard : ''}"
+             th:class="|${#fields.hasErrors('shippingWard') ? 'border-red-500' : ''} p-2 w-full border rounded|"/>
+      <span th:if="${#fields.hasErrors('shippingWard')}" th:errors="*{shippingWard}" class="text-red-500 text-xs mt-1"></span>
+    </div>
+
+    <!-- Shipping District Field -->
+    <div class="mb-4">
+      <label for="shippingDistrict" class="block text-sm font-medium mb-2">
+        District: <span th:if="${#fields.hasErrors('shippingDistrict')}" class="text-red-500">*</span>
+      </label>
+      <input type="text"
+             id="shippingDistrict"
+             name="shippingDistrict"
+             th:value="${shippingDetails != null ? shippingDetails.shippingDistrict : ''}"
+             th:class="|${#fields.hasErrors('shippingDistrict') ? 'border-red-500' : ''} p-2 w-full border rounded|"/>
+      <span th:if="${#fields.hasErrors('shippingDistrict')}" th:errors="*{shippingDistrict}" class="text-red-500 text-xs mt-1"></span>
+    </div>
+
+    <!-- Shipping Province Field -->
+    <div class="mb-4">
+      <label for="shippingProvince" class="block text-sm font-medium mb-2">
+        Province: <span th:if="${#fields.hasErrors('shippingProvince')}" class="text-red-500">*</span>
+      </label>
+      <input type="text"
+             id="shippingProvince"
+             name="shippingProvince"
+             th:value="${shippingDetails != null ? shippingDetails.shippingProvince : ''}"
+             th:class="|${#fields.hasErrors('shippingProvince') ? 'border-red-500' : ''} p-2 w-full border rounded|"/>
+      <span th:if="${#fields.hasErrors('shippingProvince')}" th:errors="*{shippingProvince}" class="text-red-500 text-xs mt-1"></span>
+    </div>
+
+
+    <input type="submit" value="Place Order" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded cursor-pointer" />
+
+  </form>
+</div>
+</body>
+
+</html>

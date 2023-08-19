@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Error</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(1rem);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s forwards;
+      opacity: 0;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-r from-blue-400 to-purple-500 h-screen flex justify-center items-center">
+
+<div class="bg-white p-8 rounded-lg shadow-xl w-96 fade-in">
+  <div class="flex justify-center items-center mb-4">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 2h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 12c-.77 1.333.192 3 1.732 3z"></path>
+    </svg>
+  </div>
+  <h1 class="text-2xl font-bold mb-4 text-red-600">Oops! Something went wrong.</h1>
+  <p class="text-gray-700 mb-4" th:text="${errorMessage}">Error message goes here.</p>
+  <a href="/" class="text-blue-500 hover:underline">Go back to homepage</a>
+</div>
+
+<script>
+  // If you want to add some JS-based interactivity or animations
+  document.addEventListener('DOMContentLoaded', function() {
+    const errorBox = document.querySelector('.fade-in');
+    setTimeout(() => {
+      errorBox.style.opacity = 1;
+    }, 100);
+  });
+</script>
+
+</body>
+</html>

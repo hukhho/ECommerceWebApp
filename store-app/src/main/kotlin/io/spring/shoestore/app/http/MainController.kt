@@ -1,10 +1,6 @@
 package io.spring.shoestore.app.http
 
-import io.spring.shoestore.app.http.api.ProductData
-import io.spring.shoestore.app.http.api.ProductResults
-import io.spring.shoestore.core.products.Product
-import io.spring.shoestore.core.products.ProductLookupQuery
-import io.spring.shoestore.core.products.ProductService
+import io.spring.shoestore.app.exception.AppException
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 
@@ -17,8 +13,15 @@ class MainController {
 
     @GetMapping("/")
     fun index(): String {
-        return "index"
+        return "redirect:/products"
     }
+        @GetMapping("/test-error")
+        fun testError(): String {
+            throw AppException("Test ne hihi!")
+            return "redirect:/products"
+        }
+
+
 
     @GetMapping("/user/index")
     fun userIndex(): String {

@@ -1,0 +1,1 @@
+docker run --name shoestore-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=shoestore -p 5432:5432 -d postgres

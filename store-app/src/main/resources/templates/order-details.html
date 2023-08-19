@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Order Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-100 p-8">
+
+<div class="bg-white p-6 rounded shadow w-full max-w-3xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6 text-center">Order Details</h1>
+
+    <div class="border-b pb-4 mb-4">
+        <h2 class="text-xl font-semibold mb-2">Receiver Information</h2>
+        <div class="grid grid-cols-2 gap-4">
+            <p><strong class="font-medium">Name:</strong> <span th:text="${order.receiverName}"></span></p>
+            <p><strong class="font-medium">Phone:</strong> <span th:text="${order.receiverPhone}"></span></p>
+        </div>
+        <p class="mt-2"><strong class="font-medium">Note:</strong> <span th:text="${order.note}"></span></p>
+    </div>
+
+    <div class="border-b pb-4 mb-4">
+        <h2 class="text-xl font-semibold mb-2">Shipping Information</h2>
+        <div class="grid grid-cols-2 gap-4">
+            <p><strong class="font-medium">Street:</strong> <span th:text="${order.shippingStreet}"></span></p>
+            <p><strong class="font-medium">Ward:</strong> <span th:text="${order.shippingWard}"></span></p>
+            <p><strong class="font-medium">District:</strong> <span th:text="${order.shippingDistrict}"></span></p>
+            <p><strong class="font-medium">Province:</strong> <span th:text="${order.shippingProvince}"></span></p>
+        </div>
+    </div>
+
+    <div class="border-b pb-4 mb-4">
+        <h2 class="text-xl font-semibold mb-2">Order Items</h2>
+        <table class="min-w-full bg-white border-collapse">
+            <thead>
+            <tr>
+                <th class="border py-2 px-4">SKU</th>
+                <th class="border py-2 px-4">Label</th>
+                <th class="border py-2 px-4">Size</th>
+                <th class="border py-2 px-4">Color</th>
+                <th class="border py-2 px-4">Quantity</th>
+                <th class="border py-2 px-4">Subtotal</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${order.itemDetails}">
+                <td class="border py-2 px-4" th:text="${item.sku}"></td>
+                <td class="border py-2 px-4" th:text="${item.label}"></td>
+                <td class="border py-2 px-4" th:text="${item.size}"></td>
+                <td class="border py-2 px-4" th:text="${item.color}"></td>
+                <td class="border py-2 px-4" th:text="${item.quantity}"></td>
+                <td class="border py-2 px-4" th:text="${item.subtotal}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="border-b pb-4 mb-4">
+        <h2 class="text-xl font-semibold mb-2">Order Summary</h2>
+        <div class="grid grid-cols-2 gap-4">
+            <p><strong class="font-medium">Product Cost:</strong> <span th:text="${order.productCost}"></span></p>
+            <p><strong class="font-medium">Tax Amount:</strong> <span th:text="${order.taxAmount}"></span></p>
+            <p><strong class="font-medium">Shipping Cost:</strong> <span th:text="${order.shippingCost}"></span></p>
+            <p><strong class="font-medium">Total Amount:</strong> <span th:text="${order.totalAmount}"></span></p>
+        </div>
+    </div>
+
+    <div class="border-b pb-4 mb-4">
+        <h2 class="text-xl font-semibold mb-2">Shipping Details</h2>
+        <div class="grid grid-cols-2 gap-4">
+            <p><strong class="font-medium">Shipping Date:</strong> <span th:text="${order.shippingDate}"></span></p>
+            <p><strong class="font-medium">Carrier:</strong> <span th:text="${order.carrier}"></span></p>
+            <p><strong class="font-medium">Tracking Number:</strong> <span th:text="${order.trackingNumber}"></span></p>
+        </div>
+    </div>
+
+    <div class="border-b pb-4 mb-4">
+        <h2 class="text-xl font-semibold mb-2">Order Status</h2>
+        <p><strong class="font-medium">Status:</strong> <span th:text="${order.orderStatus.description}"></span></p>
+    </div>
+
+    <div class="border-b pb-4 mb-4">
+        <h2 class="text-xl font-semibold mb-2">Payment Details</h2>
+        <table class="min-w-full bg-white border-collapse">
+            <thead>
+            <tr>
+                <th class="border py-2 px-4">Payment ID</th>
+                <th class="border py-2 px-4">Order ID</th>
+                <th class="border py-2 px-4">Payment Date</th>
+                <th class="border py-2 px-4">Payment Method</th>
+                <th class="border py-2 px-4">Total Amount</th>
+                <th class="border py-2 px-4">Payment Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="payment : ${payments}">
+                <td class="border py-2 px-4" th:text="${payment.id}"></td>
+                <td class="border py-2 px-4" th:text="${payment.orderID}"></td>
+                <td class="border py-2 px-4" th:text="${payment.paymentDate}"></td>
+                <td class="border py-2 px-4" th:text="${payment.paymentMethod}"></td>
+                <td class="border py-2 px-4" th:text="${payment.totalAmount}"></td>
+                <td class="border py-2 px-4" th:text="${payment.paymentStatus.description}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <a href="/orders" class="block text-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">Back to Orders List</a>
+</div>
+
+</body>
+</html>

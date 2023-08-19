@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Shopping Cart</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <style>
+    .product-image {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+    .btn {
+      transition: transform 0.3s;
+    }
+    .btn:hover {
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+
+<div class="cart-container mx-auto mt-10 px-4 md:px-0 md:w-3/4 lg:w-2/3">
+  <!-- Flash Messages -->
+  <div th:if="${successMessage}" class="bg-green-500 text-white px-4 py-2 rounded mb-4">
+    <span th:text="${successMessage}"></span>
+  </div>
+  <div th:if="${errorMessage}" class="bg-red-500 text-white px-4 py-2 rounded mb-4">
+    <span th:text="${errorMessage}"></span>
+  </div>
+  <h1 class="text-3xl font-semibold mb-6">Shopping Cart</h1>
+  <div th:if="${cartItems.isEmpty()}" class="bg-yellow-100 p-4 rounded-lg shadow-md">
+    Your cart is empty. <a th:href="@{/products}" class="text-blue-500 hover:underline">Continue shopping</a>.
+  </div>
+  <div th:if="!${cartItems.isEmpty()}" class="bg-white shadow-md rounded-lg p-6">
+
+  <div class="bg-white shadow-md rounded-lg p-6">
+    <table class="min-w-full bg-white border-collapse">
+      <thead>
+      <tr>
+        <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Product</th>
+        <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Color</th>
+        <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Size</th>
+        <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+        <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Total Price</th>
+        <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="cartItem : ${cartItems}">
+        <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+          <div class="flex items-center">
+            <div class="flex-shrink-0 h-10 w-10">
+              <img class="product-image" th:src="${cartItem?.product?.imageURL}" alt="Product Image">
+            </div>
+            <div class="ml-4">
+              <div class="text-sm leading-5 font-medium text-gray-900" th:text="${cartItem?.product?.name}">Product Name</div>
+            </div>
+          </div>
+        </td>
+        <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 text-gray-500" th:text="${cartItem?.color}">Color</td>
+        <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 text-gray-500" th:text="${cartItem?.size}">Size</td>
+        <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+          <!-- Form for updating and removing item -->
+          <form th:action="@{/cart/update}" method="post" class="inline-block">
+            <input type="hidden" name="id" th:value="${cartItem.id.value}" />
+            <input class="product-quantity w-20 text-center border rounded" type="number" name="quantity" min="1" th:value="${cartItem.quantity}">
+            <button type="submit" class="btn p-2 bg-blue-500 hover:bg-blue-700 text-white rounded transition duration-300 shadow-md">
+              <i class="fas fa-sync"></i>
+            </button>
+          </form>
+          <form th:action="@{/cart/remove}" method="post" class="inline-block ml-2">
+            <input type="hidden" name="id" th:value="${cartItem.id.value}" />
+            <button type="submit" class="btn p-2 bg-red-300 hover:bg-red-700 text-white rounded transition duration-300 shadow-md">
+              <i class="fas fa-trash"></i>
+            </button>
+          </form>
+        </td>
+        <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 text-gray-500">
+          $<span th:text="${#numbers.formatDecimal(cartItem?.product?.price * cartItem?.quantity, 2, 'POINT', 2, 'COMMA')}">0.00</span>
+        </td>
+        <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 text-gray-500">
+          <!-- Additional actions can be added here if needed -->
+        </td>
+      </tr>
+      </tbody>
+      <tfoot>
+      <tr>
+        <td colspan="5" class="text-right pr-4">Total:</td>
+        <td class="product-cell p-4">
+          $<span th:text="${#numbers.formatDecimal(grandTotal, 2, 'POINT', 2, 'COMMA')}">0.00</span>
+        </td>
+      </tr>
+      </tfoot>
+
+    </table>
+
+    <div class="mt-8 flex justify-between">
+      <a th:href="@{/products}" class="text-blue-600 hover:underline">Continue shopping</a>
+
+      <button class="btn bg-green-300 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300 shadow-md" onclick="location.href='/checkout'">
+        Place Order
+      </button>
+    </div>
+
+  </div>
+
+  </div>
+</div>
+
+<!-- Feedback Toast Container -->
+<div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-4"></div>
+
+<!-- Add some JavaScript for the toast notifications -->
+<script>
+  // Hide flash messages after 3 seconds
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+      const messages = document.querySelectorAll('.bg-green-500, .bg-red-500');
+      messages.forEach(msg => msg.style.display = 'none');
+    }, 3000);
+  });
+
+  // Function to show toast messages
+  function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast bg-${type}-500 text-white p-4 rounded shadow-lg`;
+    toast.textContent = message;
+    document.getElementById('toast-container').appendChild(toast);
+    setTimeout(() => {
+      toast.remove();
+    }, 3000);
+  }
+</script>
+
+
+</body>
+</html>

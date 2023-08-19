@@ -1,41 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product List</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
         .product-card {
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
         .product-card:hover {
             transform: translateY(-4px);
-        }
-        .add-to-cart {
-            padding: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         .btn {
             cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .btn:hover {
+            background-color: #2563eb;
+            transform: translateY(-2px);
         }
     </style>
 </head>
-<body class="bg-gray-100">
-<!--<div th:include="header :: header"></div>-->
+<body class="bg-gray-100 font-sans">
+
 <div th:replace="~{'fragments/header' :: header}"></div>
 
 <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-semibold mb-6">Product List</h1>
+    <h1 class="text-3xl font-semibold mb-6 text-center">Product List</h1>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <!-- Loop through the products and display them -->
         <div th:each="product : ${products}" class="bg-white shadow-md rounded-lg overflow-hidden product-card">
-            <img class="w-full h-48 object-cover object-center" th:src="${product.imageURL}" alt="Product Image">
-            <div class="p-6">
-                <h3 class="text-lg font-semibold mb-2" th:text="${product.name}">Product Name</h3>
-                <p class="text-gray-500 mb-2" th:text="${product.description}">Description</p>
-                <p class="font-bold text-blue-600" th:text="'$' + ${product.price}">Price</p>
-                <div class="add-to-cart mt-4">
-                    <button class="btn bg-blue-500 text-white px-4 py-2 rounded-full">Add to Cart</button>
+            <a th:href="@{/product/{id}(id=${product.id})}" class="block">
+                <img class="w-full h-48 object-cover object-center" th:src="${product.imageURL}" alt="Product Image">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold mb-2" th:text="${product.name}">Product Name</h3>
+                    <p class="text-gray-500 mb-2" th:text="${product.description}">Description</p>
+                    <p class="text-gray-500 mb-2" th:text="${product.categoryName}">Category Name</p>
+                    <p class="font-bold text-blue-600" th:text="'$' + ${product.price}">Price</p>
+                    <div class="add-to-cart mt-4">
+                        <button class="btn bg-blue-500 text-white px-4 py-2 rounded-full hover:shadow-lg">Add to Cart</button>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 </div>

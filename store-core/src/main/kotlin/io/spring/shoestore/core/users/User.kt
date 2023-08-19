@@ -1,8 +1,6 @@
 package io.spring.shoestore.core.users
 
-import io.spring.shoestore.core.products.ProductId
-import java.math.BigDecimal
-import java.util.UUID
+import java.util.*
 
 data class User(
     val id: UserId,
@@ -16,10 +14,14 @@ data class User(
 )
 data class UserId(val value: UUID) {
     companion object {
+        private val DEFAULT_UUID_STRING = "00000000-0000-0000-0000-000000000000"
         @JvmStatic
-        fun from(rawValue: String): UserId {
-            return UserId(UUID.fromString(rawValue))
+        fun from(rawValue: String?): UserId {
+            return if (rawValue == null) {
+                UserId(UUID.fromString(DEFAULT_UUID_STRING))
+            } else {
+                UserId(UUID.fromString(rawValue))
+            }
         }
     }
 }
-

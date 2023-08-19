@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product Variants</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .btn {
+            transition: transform 0.3s;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+<div th:replace="~{'fragments/header' :: header}"></div>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="flex flex-wrap -mx-4">
+        <div class="w-full md:w-1/2 px-4 mb-4 md:mb-0">
+            <img class="w-full h-64 object-cover object-center rounded-lg shadow-md" th:src="${product.imageURL}" alt="Product Image">
+        </div>
+        <div class="w-full md:w-1/2 px-4">
+            <h1 class="text-2xl font-semibold mb-2" th:text="${product.name}">Product Name</h1>
+            <p class="text-gray-500 mb-2" th:text="${product.description}">Description</p>
+            <p class="text-gray-500 mb-2" th:text="${product.categoryName}">Category Name</p>
+            <p class="font-bold text-blue-600 mb-4" th:text="'$' + ${product.price}">Price</p>
+
+            <form method="post" th:action="@{/cart/add}" class="mt-4">
+                <label for="colorSelect" class="block font-semibold mb-2">Color:</label>
+                <select name="sku" id="colorSelect" class="w-full border rounded p-2 mb-4">
+                    <option value="">Select Color And Size</option>
+                    <option th:each="variant : ${listVariant}" th:value="${variant.sku.value}">
+                        <span th:text="${variant.color}"></span> - <span th:text="${variant.size}"></span>
+                    </option>
+                </select>
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="btn bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded transition duration-300 shadow-md">Add to Cart</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="mt-8">
+        <h2 class="text-lg font-semibold mb-4">Available Quantity</h2>
+        <table class="min-w-full bg-white rounded-lg overflow-hidden shadow-md">
+            <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">SKU</th>
+                <th class="px-6 py-3 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Color</th>
+                <th class="px-6 py-3 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Size</th>
+                <th class="px-6 py-3 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Quantity Available</th>
+            </tr>
+            </thead>
+            <tbody class="bg-white">
+            <tr th:each="variant : ${listVariant}">
+                <td class="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500" th:text="${variant.sku.value}"></td>
+                <td class="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500" th:text="${variant.color.code}"></td>
+                <td class="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500" th:text="${variant.size.code}"></td>
+                <td class="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500" th:text="${variant.quantityAvailable.value}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<div th:replace="~{'fragments/footer' :: footer}"></div>
+
+</body>
+</html>

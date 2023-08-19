@@ -1,12 +1,10 @@
 package io.spring.shoestore.postgres.mappers
 
-import io.spring.shoestore.core.products.*
 import io.spring.shoestore.core.users.User
 import io.spring.shoestore.core.users.UserId
 import org.springframework.jdbc.core.RowMapper
 import java.sql.ResultSet
-import java.util.UUID
-
+import java.util.*
 
 internal class UserMapper : RowMapper<User> {
     override fun mapRow(rs: ResultSet, rowNum: Int): User {
