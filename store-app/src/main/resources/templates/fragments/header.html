@@ -50,7 +50,7 @@
             <div class="space-x-2">
                 <a class="header-link" th:href="@{/login}" sec:authorize="!isAuthenticated()">Login</a>
                 <div th:fragment="logout" class="logout inline-block" sec:authorize="isAuthenticated()">
-                    <span class="mr-2 text-sm">Logged in as: <span class="font-semibold" sec:authentication="name"></span></span>
+                    <span class="mr-2 text-sm">Logged in as: <span class="font-semibold" sec:authentication="principal.email"></span></span>
                     <form th:action="@{/logout}" method="post" class="inline-block">
                         <button type="submit" class="logout-button text-white rounded px-2 py-1">Logout</button>
                     </form>

@@ -1,5 +1,32 @@
-spring:
+server:
+  port: 3000
 
+
+#logging:
+#  level:
+#    root: ERROR
+#  #    org.springframework.web: ERROR
+#  #    com.auth0.example: TRACE
+
+  error:
+    whitelabel:
+      enabled=false:
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          auth0:
+            client-id: zR2dd6tWcYHzIGQYYvxRraVQep0ezqHg
+            client-secret: e2wdSh-I_WcANzwfXviSRwwtAHWtXbIDPyip_t0rgvR64ZpN9pqPW9d75_1fTxNE
+            scope:
+              - openid
+              - profile
+              - email
+        provider:
+          auth0:
+            # trailing slash is important!
+            issuer-uri: https://dev-gzgdh7hw4udvv70u.us.auth0.com/
   flyway:
     enabled: true
   jooq:

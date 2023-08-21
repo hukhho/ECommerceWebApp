@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <div th:replace="~{'/fragments/admin-fragments' :: header}"></div>
+</head>
+
+<body class="bg-gray-100">
+
+<div class="flex h-screen">
+
+  <!-- Sidebar Fragment -->
+  <div th:replace="~{'/fragments/admin-fragments' :: sidebar}"></div>
+
+  <!-- Main Content -->
+  <div class="flex-1 p-8">
+    <div class="bg-white p-6 rounded shadow w-full max-w-3xl mx-auto">
+      <h2 class="text-3xl font-bold mb-6 text-center">Create User</h2>
+      <form th:action="@{/admin/user/create}" th:object="${user}" method="post">
+        <!-- Username -->
+        <div class="mb-4">
+          <label for="username" class="block text-sm font-medium text-gray-700">
+            Username: <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="username" th:field="*{username}" class="mt-1 p-2 w-full border rounded-md">
+          <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="text-red-500 text-xs mt-1"></span>
+        </div>
+
+        <!-- Email -->
+        <div class="mb-4">
+          <label for="email" class="block text-sm font-medium text-gray-700">
+            Email: <span class="text-red-500">*</span>
+          </label>
+          <input type="email" id="email" th:field="*{email}" class="mt-1 p-2 w-full border rounded-md">
+          <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-red-500 text-xs mt-1"></span>
+        </div>
+
+        <!-- Full Name -->
+        <div class="mb-4">
+          <label for="fullName" class="block text-sm font-medium text-gray-700">
+            Full Name: <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="fullName" th:field="*{fullName}" class="mt-1 p-2 w-full border rounded-md">
+          <span th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}" class="text-red-500 text-xs mt-1"></span>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-4">
+          <label for="password" class="block text-sm font-medium text-gray-700">
+            Password: <span class="text-red-500">*</span>
+          </label>
+          <input type="password" id="password" th:field="*{password}" class="mt-1 p-2 w-full border rounded-md">
+          <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-red-500 text-xs mt-1"></span>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="mb-4">
+          <label for="confirmPassword" class="block text-sm font-medium text-gray-700">
+            Confirm Password: <span class="text-red-500">*</span>
+          </label>
+          <input type="password" id="confirmPassword" th:field="*{confirmPassword}" class="mt-1 p-2 w-full border rounded-md">
+          <span th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}" class="text-red-500 text-xs mt-1"></span>
+        </div>
+        <!-- Role ID -->
+        <div class="mb-4">
+          <label for="roleID" class="block text-sm font-medium text-gray-700">
+            Role ID: <span th:if="${#fields.hasErrors('roleID')}" class="text-red-500">*</span>
+          </label>
+          <input type="text" id="roleID" th:field="*{roleID}" class="mt-1 p-2 w-full border rounded-md">
+          <span th:if="${#fields.hasErrors('roleID')}" th:errors="*{roleID}" class="text-red-500 text-xs mt-1"></span>
+        </div>
+
+          <!-- Error Message -->
+          <div th:if="${errorMessage}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
+              <strong class="font-bold">Error!</strong>
+              <span class="block sm:inline" th:text="${errorMessage}"></span>
+              <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
+                <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"></path></svg>
+              </span>
+          </div>
+
+          <!-- Submit Button -->
+        <div class="mt-6">
+          <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Create</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+</body>
+</html>

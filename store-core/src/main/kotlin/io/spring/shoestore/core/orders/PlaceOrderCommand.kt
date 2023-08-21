@@ -1,16 +1,13 @@
-
-
 import io.spring.shoestore.core.users.UserId
-import io.spring.shoestore.core.variants.Sku
-
+import java.util.*
 
 data class PlaceOrderCommand(
+    val orderId: UUID,
     val userId: UserId,
-    val items: List<Pair<Sku, Int>>?,
+    val items: List<Pair<String, Int>>?,
     val shippingDetails: ShippingDetails,
+    val paymentMethod: String
 )
-
-
 data class ShippingDetails(
     val receiverName: String,
 
@@ -65,7 +62,4 @@ data class ShippingDetails(
 
         return errors
     }
-
 }
-
-

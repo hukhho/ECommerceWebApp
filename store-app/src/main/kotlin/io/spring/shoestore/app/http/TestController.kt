@@ -43,8 +43,26 @@ class TestController {
 
     @GetMapping("/test123")
     fun showForm(personForm: PersonForm?): String {
+//        val partnerCode = "MOMOMWNB20210129"
+//        val accessKey = "nkDyGIefYvOL9Nyg"
+//        val secretKey = "YaCm3DJAJuAV9jGmwauQ0mwT6FpqYiOI"
+//        val endPoint = "https://test-payment.momo.vn/v2/gateway/api"
+//
+//        val partnerInfo = PartnerInfo(partnerCode, accessKey, secretKey)
+//        log.info("partnerInfo $partnerInfo")
+//        val test = 123();
+//        log.info("partnerInfo $partnerInfo")
+
+//        val test = Test789()
+//        val hello = test.main()
+//
+//        log.info("hello $hello")
+
         return "form"
     }
+
+
+
 
     @PostMapping("/test123")
     fun checkPersonInfo(personForm: PersonForm?, bindingResult: BindingResult): String {
@@ -79,4 +97,75 @@ class TestController {
         }
         return "number-page"
     }
+
+//    @GetMapping("/momo")
+//    fun testMomo(model: Model): String {
+//        val username: String = "hukhho"
+//
+//        val requestId = System.currentTimeMillis().toString()
+//
+//        val orderId = System.currentTimeMillis().toString() + "_InvoiceID"
+//
+//
+//        val returnURL = "http://localhost:3000/payment/queryPayment"
+//        val notifyURL = "http://localhost:3000/payment/queryPayment"
+//
+//
+//        val partnerCode = "MOMOMWNB20210129"
+//        val accessKey = "nkDyGIefYvOL9Nyg"
+//        val secretKey = "YaCm3DJAJuAV9jGmwauQ0mwT6FpqYiOI"
+//        val endPoint = "https://test-payment.momo.vn/v2/gateway/api"
+//
+//        val partnerInfo = PartnerInfo(partnerCode, accessKey, secretKey)
+//
+//        val environment: Environment = Environment.selectEnv("dev")
+//
+//        environment.partnerInfo = partnerInfo
+//
+//        val captureWalletMoMoResponse: PaymentResponse = CreateOrderMoMo.process(
+//            environment,
+//            orderId,
+//            requestId,
+//            java.lang.Long.toString(50000L),
+//            username,
+//            returnURL,
+//            notifyURL,
+//            "",
+//            RequestType.CAPTURE_WALLET
+//        )
+//        //PaymentResponse captureATMMoMoResponse = CreateOrderMoMo.process(environment, orderId, requestId, Long.toString(amount), orderInfo, returnURL, notifyURL, "", RequestType.PAY_WITH_ATM);
+//        //PaymentResponse captureCreditMoMoResponse = CreateOrderMoMo.process(environment, orderId, requestId, Long.toString(amount), orderInfo, returnURL, notifyURL, "", RequestType.PAY_WITH_CREDIT);
+//        //PaymentResponse captureATMMoMoResponse = CreateOrderMoMo.process(environment, orderId, requestId, Long.toString(amount), orderInfo, returnURL, notifyURL, "", RequestType.PAY_WITH_ATM);
+//        //PaymentResponse captureCreditMoMoResponse = CreateOrderMoMo.process(environment, orderId, requestId, Long.toString(amount), orderInfo, returnURL, notifyURL, "", RequestType.PAY_WITH_CREDIT);
+//
+//        val redirectLink: String = captureWalletMoMoResponse.getPayUrl().toString()
+//
+//        return "redirect:$redirectLink"
+//    }
+//    @GetMapping("/profile")
+//    fun profile(
+//        model: Model,
+//        @AuthenticationPrincipal oidcUser: OidcUser
+//    ): String? {
+//        model.addAttribute("profile", oidcUser.claims)
+//        model.addAttribute("profileJson", claimsToJson(oidcUser.claims))
+//        return "profile"
+//    }
+
+//    private fun claimsToJson(claims: Map<String, Any>): String? {
+//        try {
+//            return objectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(claims)
+//        } catch (jpe: JsonProcessingException) {
+//            log.error("Error parsing claims to JSON", jpe)
+//        }
+//        return "Error parsing claims to JSON."
+//    }
+//
+//    @Bean
+//    fun objectMapper(): ObjectMapper {
+//        val module = JavaTimeModule()
+//        return ObjectMapper()
+//            .registerModule(module)
+//    }
+
 }

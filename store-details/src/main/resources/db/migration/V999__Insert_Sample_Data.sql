@@ -29,10 +29,10 @@ VALUES
 -- Insert sample data into tblProduct
 INSERT INTO tbl_Product (id, categoryID, productCode, name, description, imageURL, price, isDelete)
 VALUES
-     ('f4c90f31-d58b-4f96-ab8d-1ef7cd8bdb3f', '16e79d32-581a-4396-8825-e56df8b36f28', 'CLTH002', 'Jeans', 'Classic denim jeans for a timeless look.', 'https://img.freepik.com/premium-photo/blue-denim-jeans-pile-jeans-pants-top-view-variety-denim-jean-textiles-black-background_221542-3316.jpg?w=996', 49.99, false),
-     ('1cca00ae-83aa-4a2c-b400-178ab877abb6', '16e79d32-581a-4396-8825-e56df8b36f28', 'SHOE002', 'T-Shirt', 'Comfortable cotton T-shirt for everyday wear.', 'https://img.freepik.com/premium-photo/black-t-shirts-with-copy-space_53876-102012.jpg?w=996', 19.99, false),
-     ('4bf4a94d-db86-4a50-a0ac-53a5464b62de', '7a96bd82-f8fe-4df9-9203-13c9ad1e2835', 'SHOE001', 'Boots', 'Nice boots', 'https://img.freepik.com/free-photo/female-model-wearing-black-boots-studio-against-white-background_181624-61478.jpg?size=626&ext=jpg', 39.99, false),
-     ('ffd3889c-a496-4fa1-bb80-e3ed79ccedb6', '7a96bd82-f8fe-4df9-9203-13c9ad1e2835', 'CLTH003', 'Sneaker', 'Nike Sneaker', 'https://img.freepik.com/free-photo/white-high-top-sneakers-unisex-footwear-fashion_53876-106036.jpg?size=626&ext=jpg', 129.99, false);
+     ('f4c90f31-d58b-4f96-ab8d-1ef7cd8bdb3f', '16e79d32-581a-4396-8825-e56df8b36f28', 'CLTH002', 'Jeans', 'Classic denim jeans for a timeless look.', 'https://img.freepik.com/premium-photo/blue-denim-jeans-pile-jeans-pants-top-view-variety-denim-jean-textiles-black-background_221542-3316.jpg?w=996', 499000, false),
+     ('1cca00ae-83aa-4a2c-b400-178ab877abb6', '16e79d32-581a-4396-8825-e56df8b36f28', 'SHOE002', 'T-Shirt', 'Comfortable cotton T-shirt for everyday wear.', 'https://img.freepik.com/premium-photo/black-t-shirts-with-copy-space_53876-102012.jpg?w=996', 199000, false),
+     ('4bf4a94d-db86-4a50-a0ac-53a5464b62de', '7a96bd82-f8fe-4df9-9203-13c9ad1e2835', 'SHOE001', 'Boots', 'Nice boots', 'https://img.freepik.com/free-photo/female-model-wearing-black-boots-studio-against-white-background_181624-61478.jpg?size=626&ext=jpg', 39900, false),
+     ('ffd3889c-a496-4fa1-bb80-e3ed79ccedb6', '7a96bd82-f8fe-4df9-9203-13c9ad1e2835', 'CLTH003', 'Sneaker', 'Nike Sneaker', 'https://img.freepik.com/free-photo/white-high-top-sneakers-unisex-footwear-fashion_53876-106036.jpg?size=626&ext=jpg', 129000, false);
 
 -- f4c90f31-d58b-4f96-ab8d-1ef7cd8bdb3f,16e79d32-581a-4396-8825-e56df8b36f28,CLTH002,Jeans,Classic denim jeans for a timeless look.,https://img.freepik.com/premium-photo/blue-denim-jeans-pile-jeans-pants-top-view-variety-denim-jean-textiles-black-background_221542-3316.jpg?w=996,49.99,false
 -- 1cca00ae-83aa-4a2c-b400-178ab877abb6,16e79d32-581a-4396-8825-e56df8b36f28,SHOE002,T-Shirt,Comfortable cotton T-shirt for everyday wear.,https://img.freepik.com/premium-photo/black-t-shirts-with-copy-space_53876-102012.jpg?w=996,19.99,false

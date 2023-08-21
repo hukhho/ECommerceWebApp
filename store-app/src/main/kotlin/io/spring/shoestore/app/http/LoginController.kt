@@ -2,7 +2,6 @@ package io.spring.shoestore.app.http
 
 import io.spring.shoestore.core.products.ProductService
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.GetMapping
 
 @Controller
 class LoginController(private val productService: ProductService) {
@@ -10,10 +9,10 @@ class LoginController(private val productService: ProductService) {
     @Controller
     class LoginController {
 
-        @GetMapping("/login")
-        fun showLoginForm(): String {
-            return "login"
-        }
+//        @GetMapping("/login")
+//        fun showLoginForm(): String {
+//            return "login"
+//        }
 
 //        @PostMapping("/login")
 //        fun processLogin(username: String, password: String): String {

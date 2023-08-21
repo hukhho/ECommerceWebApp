@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <div th:replace="~{'/fragments/admin-fragments' :: header}"></div>
+</head>
+
+<body class="bg-gray-100">
+
+<div class="flex h-screen">
+
+    <!-- Sidebar Fragment -->
+    <div th:replace="~{'/fragments/admin-fragments' :: sidebar}"></div>
+
+    <!-- Main Content -->
+    <div class="flex-1 p-8">
+        <div class="bg-white p-6 rounded shadow w-full max-w-3xl mx-auto">
+            <h2 class="text-3xl font-bold mb-6 text-center">Edit User</h2>
+            <form th:action="@{'/admin/user/' + ${user.id.value} + '/edit'}" th:object="${user}" method="post">
+                <!-- User ID (Hidden) -->
+                <input type="hidden" th:field="*{id.value}">
+<!--                <input type="hidden" th:field="*{id}">-->
+
+                <!-- Username -->
+                <div class="mb-4">
+                    <label for="username" class="block text-sm font-medium text-gray-700">
+                        Username:
+                    </label>
+                    <input type="text" id="username" th:field="*{username}" class="mt-1 p-2 w-full border rounded-md" readonly="">
+                </div>
+
+                <!-- Email -->
+                <div class="mb-4">
+                    <label for="email" class="block text-sm font-medium text-gray-700">
+                        Email:
+                    </label>
+                    <input type="email" id="email" th:field="*{email}" class="mt-1 p-2 w-full border rounded-md" readonly="">
+                </div>
+
+                <!-- Full Name -->
+                <div class="mb-4">
+                    <label for="fullName" class="block text-sm font-medium text-gray-700">
+                        Full Name: <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="fullName" th:field="*{fullName}" class="mt-1 p-2 w-full border rounded-md">
+                    <span th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}" class="text-red-500 text-xs mt-1"></span>
+                </div>
+
+                <!-- Role ID -->
+                <div class="mb-4">
+                    <label for="roleID" class="block text-sm font-medium text-gray-700">
+                        Role ID: <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="roleID" th:field="*{roleID}" class="mt-1 p-2 w-full border rounded-md">
+                    <span th:if="${#fields.hasErrors('roleID')}" th:errors="*{roleID}" class="text-red-500 text-xs mt-1"></span>
+                </div>
+
+                <!-- Status -->
+                <div class="mb-4">
+                    <label for="status" class="block text-sm font-medium text-gray-700">
+                        Status: <span class="text-red-500">*</span>
+                    </label>
+                    <input type="checkbox" id="status" th:field="*{status}" class="mt-1 p-2">
+                    <span th:if="${#fields.hasErrors('status')}" th:errors="*{status}" class="text-red-500 text-xs mt-1"></span>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="mt-6 flex justify-between">
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Update</button>
+
+                    <!-- Cancel Button -->
+                    <a th:href="@{'/admin/users'}" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Cancel</a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

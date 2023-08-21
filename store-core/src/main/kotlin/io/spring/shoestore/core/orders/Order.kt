@@ -4,13 +4,12 @@ import ShippingDetails
 import io.spring.shoestore.core.cart.Cart
 import io.spring.shoestore.core.products.Product
 import io.spring.shoestore.core.users.UserId
-import io.spring.shoestore.core.variants.Sku
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.*
 
 class Order(
-    val id: UUID = UUID.randomUUID(), // Immutable: Order ID should never change
+    val id: UUID, // Immutable: Order ID should never change
     val userID: UUID,  //CONSTRUCTOR HERE
     val orderDate: Instant = Instant.now(), // Immutable: The date the order was placed shouldn't change
     var orderStatus: OrderStatus = OrderStatus.PENDING, // Mutable: The status can change (e.g., from PENDING to SHIPPED)
@@ -21,7 +20,7 @@ class Order(
     var shippingWard: String? = null, // Mutable: Shipping ward might be updated
     var shippingDistrict: String? = null, // Mutable: Shipping district might be updated
     var shippingProvince: String? = null, // Mutable: Shipping province might be updated
-    val productCost: BigDecimal = BigDecimal.ZERO, // Immutable: Product cost at the time of order shouldn't change
+    var productCost: BigDecimal = BigDecimal.ZERO, // Immutable: Product cost at the time of order shouldn't change
     val taxAmount: BigDecimal = BigDecimal.ZERO,   // Immutable: Tax amount at the time of order shouldn't change
     val shippingCost: BigDecimal = BigDecimal.ZERO, // Immutable: Shipping cost at the time of order shouldn't change
     var totalAmount: BigDecimal = BigDecimal.ZERO,
@@ -29,7 +28,6 @@ class Order(
     var carrier: String? = null,       // Mutable: Carrier might be updated
     var trackingNumber: String? = null // Mutable: Tracking number might be updated when available
 )
-
 {
     private val items: MutableList<OrderLineItem> = mutableListOf()
     private val itemsWithDetails: MutableList<OrderLineItemResponse> = mutableListOf()
@@ -40,13 +38,13 @@ class Order(
     fun getItems() = items
     fun getItemDetails() = itemsWithDetails
 
-    fun addItem(sku: Sku, pricePer: BigDecimal, quantity: Int) {
+    fun addItem(sku: String, pricePer: BigDecimal, quantity: Int) {
         val subtotal = pricePer.multiply(BigDecimal(quantity))
         items.add(OrderLineItem(id, sku, quantity, subtotal))
         price = price.add(subtotal)
     }
     fun addItemDetails(
-        sku: Sku,
+        sku: String,
         product: Product?,
         label: String?,
         size: String?,
@@ -158,14 +156,14 @@ class Order(
 
     data class OrderLineItem(
         val orderID: UUID,
-        val sku: Sku,
+        val sku: String,
         val quantity: Int,
         val subtotal: BigDecimal
     )
 
     data class OrderLineItemResponse(
         val orderID: UUID,
-        val sku: Sku,
+        val sku: String,
         val product: Product?,
         val label: String?,
         val size: String?,
@@ -193,8 +191,9 @@ class Order(
     }
 }
 
-fun convertCartToOrder(cartItems: List<Cart>, userID: UserId): Order {
-    val order = Order(userID = userID.value)
+fun convertCartToOrder(cartItems: List<Cart>, userID: UserId, orderID: UUID): Order {
+
+    val order = Order(id = orderID, userID = userID.value)
     var totalAmount = BigDecimal.ZERO
 
     for (cartItem in cartItems) {
@@ -203,11 +202,14 @@ fun convertCartToOrder(cartItems: List<Cart>, userID: UserId): Order {
         }
 
         val itemPrice = cartItem.product?.price ?: BigDecimal.ZERO
+
         totalAmount += itemPrice.multiply(BigDecimal(cartItem.quantity))
 
-        order.addItem(Sku(cartItem.sku), itemPrice, cartItem.quantity)
+        order.addItem((cartItem.sku), itemPrice, cartItem.quantity)
     }
 
     order.totalAmount = totalAmount
+    order.productCost = totalAmount
+    
     return order
 }

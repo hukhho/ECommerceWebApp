@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <div th:replace="~{'/fragments/admin-fragments' :: header}"></div>
+</head>
+
+<body>
+
+<div class="flex h-screen bg-gray-100">
+    <!-- Insert Sidebar Fragment -->
+    <div th:replace="~{'/fragments/admin-fragments' :: sidebar}"></div>
+
+    <!-- Insert Main Content Fragment -->
+    <div class="flex-1 flex flex-col overflow-hidden ml-1/5 mt-10 overflow-y-auto max-h-screen">
+         <div class="container mx-auto px-6 py-8">
+                        <h3 class="text-3xl mb-7 font-semibold">Product List</h3>
+                        <table class="min-w-full bg-white border rounded-lg overflow-hidden mb-8 shadow-lg">
+                            <thead class="bg-gray-200">
+                            <tr>
+                                <th class="py-2 px-4 border-b">Category Name</th>
+                                <th class="py-2 px-4 border-b">Product Code</th>
+                                <th class="py-2 px-4 border-b">Name</th>
+                                <th class="py-2 px-4 border-b">Description</th>
+                                <th class="py-2 px-4 border-b">Image URL</th>
+                                <th class="py-2 px-4 border-b">Price</th>
+                                <th class="py-2 px-4 border-b">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="product : ${products}">
+                                <td class="py-2 px-4 border-b" th:text="${product.categoryName}"></td>
+                                <td class="py-2 px-4 border-b" th:text="${product.productCode}"></td>
+                                <td class="py-2 px-4 border-b" th:text="${product.name}"></td>
+                                <td class="py-2 px-4 border-b" th:text="${product.description}"></td>
+                                <td class="py-2 px-4 border-b" th:text="${product.imageURL}"></td>
+                                <td class="py-2 px-4 border-b" th:text="${product.price}"></td>
+                                <td class="py-2 px-4 border-b">
+                                    <a th:href="@{'/admin/product/' + ${product.id.value} + '/variants'}" class="text-blue-500 hover:text-blue-700">
+                                        <i class="fa-thin fa-layer-group"></i>
+                                        Inventory
+                                    </a>
+                                    <a th:href="@{'/admin/product/' + ${product.id.value} + '/edit'}" class="text-blue-500 hover:text-blue-700">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <a th:href="@{'/admin/product/' + ${product.id.value} + '/delete'}" class="text-red-500 ml-4 hover:text-red-700" th:method="delete">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </a>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="flex justify-end">
+                            <a th:href="@{'/admin/product/create'}" class="inline-block bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded transform hover:scale-105 transition duration-300">
+                                <i class="fas fa-plus mr-2"></i> Add New Product
+                            </a>
+                        </div>
+                    </div>
+        </div>
+    </div>
+</div>
+
+
+</body>
+</html>

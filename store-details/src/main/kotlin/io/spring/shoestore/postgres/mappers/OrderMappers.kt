@@ -2,7 +2,6 @@ package io.spring.shoestore.postgres.mappers
 
 import io.spring.shoestore.core.orders.Order
 import io.spring.shoestore.core.products.Product
-import io.spring.shoestore.core.variants.Sku
 import org.springframework.jdbc.core.RowMapper
 import java.math.BigDecimal
 import java.sql.ResultSet
@@ -35,14 +34,14 @@ internal class OrderMapper: RowMapper<Order> {
 
 internal data class LineItemRow(
     val orderId: UUID,
-    val sku: Sku,
+    val sku: String,
     val quantity: Int,
     val pricePerItem: BigDecimal,
     val subtotal: BigDecimal
 )
 internal data class LineItemDetailsRow(
     val orderId: UUID,
-    val sku: Sku,
+    val sku: String,
     val quantity: Int,
     val product: Product?,
     val label: String?,
@@ -55,7 +54,7 @@ internal class LineItemMapper: RowMapper<LineItemRow> {
     override fun mapRow(rs: ResultSet, rowNum: Int): LineItemRow {
         return LineItemRow(
             orderId = UUID.fromString(rs.getString("orderID")),
-            sku = Sku(rs.getString("sku")),
+            sku = rs.getString("sku"),
             quantity = rs.getInt("quantity"),
             pricePerItem = rs.getBigDecimal("pricePerItem"),
             subtotal = rs.getBigDecimal("subtotal")
@@ -68,7 +67,7 @@ internal class LineItemDetailsMapper: RowMapper<LineItemDetailsRow> {
     override fun mapRow(rs: ResultSet, rowNum: Int): LineItemDetailsRow {
         return LineItemDetailsRow(
             orderId = UUID.fromString(rs.getString("orderID")),
-            sku = Sku(rs.getString("sku")),
+            sku = rs.getString("sku"),
             quantity = rs.getInt("quantity"),
             product = productMapper.mapRow(rs, rowNum),
             label = rs.getString("label"),

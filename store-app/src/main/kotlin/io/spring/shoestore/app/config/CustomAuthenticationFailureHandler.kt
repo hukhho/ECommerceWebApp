@@ -22,6 +22,6 @@ class CustomAuthenticationFailureHandler : AuthenticationFailureHandler {
 
         request?.session?.setAttribute("error", "Bad credentials")
 
-        redirectStrategy.sendRedirect(request, response, "/log-in?error=true")
+        redirectStrategy.sendRedirect(request, response, "/log  in?error=true")
     }
 }

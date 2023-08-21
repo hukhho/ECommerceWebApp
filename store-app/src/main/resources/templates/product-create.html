@@ -1,59 +1,90 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
-  <title>Create Product</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <div th:replace="~{'/fragments/admin-fragments' :: header}"></div>
 </head>
-<body class="bg-gray-100 p-8">
-<div class="bg-white p-6 rounded shadow w-full max-w-3xl mx-auto">
-  <h2 class="text-3xl font-bold mb-6 text-center">Create Product</h2>
-  <form th:action="@{/product}" th:object="${product}" method="post">
-    <!-- Product ID (Hidden as it's auto-generated) -->
-    <input type="hidden" th:field="*{id.value}">
 
-    <!-- Category ID -->
-    <div class="mb-4">
-      <label for="categoryID" class="block text-sm font-medium text-gray-700">Category ID</label>
-      <select id="categoryID" th:field="*{categoryID}" class="mt-1 p-2 w-full border rounded-md">
-        <option th:each="category : ${categories}" th:value="${category.id.value}" th:text="${category.name}"></option>
-      </select>
-    </div>
+<body class="bg-gray-100">
 
-    <!-- Product Code -->
-    <div class="mb-4">
-      <label for="productCode" class="block text-sm font-medium text-gray-700">Product Code</label>
-      <input type="text" id="productCode" th:field="*{productCode}" class="mt-1 p-2 w-full border rounded-md">
-    </div>
+<div class="flex h-screen">
 
-    <!-- Name -->
-    <div class="mb-4">
-      <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
-      <input type="text" id="name" th:field="*{name}" class="mt-1 p-2 w-full border rounded-md">
-    </div>
+  <!-- Sidebar Fragment -->
+  <div th:replace="~{'/fragments/admin-fragments' :: sidebar}"></div>
 
-    <!-- Description -->
-    <div class="mb-4">
-      <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-      <textarea id="description" th:field="*{description}" rows="4" class="mt-1 p-2 w-full border rounded-md"></textarea>
-    </div>
+  <!-- Main Content -->
+  <div class="flex-1 p-8">
+    <div class="bg-white p-6 rounded shadow w-full max-w-3xl mx-auto">
+      <h2 class="text-3xl font-bold mb-6 text-center">Create Product</h2>
+      <form th:action="@{/admin/product}" th:object="${product}" method="post">
+        <!-- Product ID (Hidden as it's auto-generated) -->
+        <input type="hidden" th:field="*{id.value}">
+        <input type="hidden" th:field="*{id}">
 
-    <!-- Image URL -->
-    <div class="mb-4">
-      <label for="imageURL" class="block text-sm font-medium text-gray-700">Image URL</label>
-      <input type="text" id="imageURL" th:field="*{imageURL}" class="mt-1 p-2 w-full border rounded-md">
-    </div>
+        <!-- Category ID -->
+        <div class="mb-4">
+          <label for="categoryID" class="block text-sm font-medium text-gray-700">
+            Category ID: <span th:if="${#fields.hasErrors('categoryID')}" class="text-red-500">*</span>
+          </label>
+          <select id="categoryID" th:field="*{categoryID}" class="mt-1 p-2 w-full border rounded-md">
+            <option th:each="category : ${categories}" th:value="${category.id.value}" th:text="${category.name}"></option>
+          </select>
+          <span th:if="${#fields.hasErrors('categoryID')}" th:errors="*{categoryID}" class="text-red-500 text-xs mt-1"></span>
+        </div>
 
-    <!-- Price -->
-    <div class="mb-4">
-      <label for="price" class="block text-sm font-medium text-gray-700">Price</label>
-      <input type="number" id="price" th:field="*{price}" step="0.01" class="mt-1 p-2 w-full border rounded-md">
-    </div>
+        <!-- Product Code -->
+        <div class="mb-4">
+          <label for="productCode" class="block text-sm font-medium text-gray-700">
+            Product Code: <span th:if="${#fields.hasErrors('productCode')}" class="text-red-500">*</span>
+          </label>
+          <input type="text" id="productCode" th:field="*{productCode}" class="mt-1 p-2 w-full border rounded-md">
+          <span th:if="${#fields.hasErrors('productCode')}" th:errors="*{productCode}" class="text-red-500 text-xs mt-1"></span>
+        </div>
 
-    <!-- Submit Button -->
-    <div class="mt-6">
-      <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Create</button>
+        <!-- Name -->
+        <div class="mb-4">
+          <label for="name" class="block text-sm font-medium text-gray-700">
+            Name: <span th:if="${#fields.hasErrors('name')}" class="text-red-500">*</span>
+          </label>
+          <input type="text" id="name" th:field="*{name}" class="mt-1 p-2 w-full border rounded-md">
+          <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-red-500 text-xs mt-1"></span>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-4">
+          <label for="description" class="block text-sm font-medium text-gray-700">
+            Description: <span th:if="${#fields.hasErrors('description')}" class="text-red-500">*</span>
+          </label>
+          <textarea id="description" th:field="*{description}" rows="4" class="mt-1 p-2 w-full border rounded-md"></textarea>
+          <span th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="text-red-500 text-xs mt-1"></span>
+        </div>
+
+        <!-- Image URL -->
+        <div class="mb-4">
+          <label for="imageURL" class="block text-sm font-medium text-gray-700">
+            Image URL: <span th:if="${#fields.hasErrors('imageURL')}" class="text-red-500">*</span>
+          </label>
+          <input type="text" id="imageURL" th:field="*{imageURL}" class="mt-1 p-2 w-full border rounded-md">
+          <span th:if="${#fields.hasErrors('imageURL')}" th:errors="*{imageURL}" class="text-red-500 text-xs mt-1"></span>
+        </div>
+
+        <!-- Price -->
+        <div class="mb-4">
+          <label for="price" class="block text-sm font-medium text-gray-700">
+            Price: <span th:if="${#fields.hasErrors('price')}" class="text-red-500">*</span>
+          </label>
+          <input type="number" id="price" th:field="*{price}" step="0.01" class="mt-1 p-2 w-full border rounded-md">
+          <span th:if="${#fields.hasErrors('price')}" th:errors="*{price}" class="text-red-500 text-xs mt-1"></span>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="mt-6">
+          <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Create</button>
+        </div>
+      </form>
     </div>
-  </form>
+  </div>
 </div>
+
 </body>
 </html>

@@ -7,7 +7,9 @@ import io.spring.shoestore.core.cart.CartService
 import io.spring.shoestore.core.cart.SessionId
 import io.spring.shoestore.core.orders.*
 import io.spring.shoestore.core.security.StoreAuthProvider
+import io.spring.shoestore.payment.PaymentMomo
 import io.spring.shoestore.redis.RedisInventoryWarehousingRepository
+import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Controller
@@ -15,7 +17,10 @@ import org.springframework.ui.Model
 import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ModelAttribute
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.servlet.mvc.support.RedirectAttributes
 import java.math.BigDecimal
+import java.util.*
 
 @Controller
 class CheckoutController(
@@ -24,15 +29,18 @@ class CheckoutController(
     private val cartService: CartService,
     private val storeAuthProvider: StoreAuthProvider,
     private val authenticationUtils: AuthenticationUtils,
-    private val inventoryRepository: RedisInventoryWarehousingRepository // Inject the Redis repository
+    private val inventoryRepository: RedisInventoryWarehousingRepository,
+    private val request: HttpServletRequest
 ) {
     val defaultSessionId = SessionId.from("00000000-0000-0000-0000-000000000000")
 
     @GetMapping("/checkout")
-    fun showCheckoutPage(authentication: Authentication?,
-                         model: Model,
-                         @ModelAttribute("shippingDetails") shippingDetails: ShippingDetails?,
-                         bindingResult: BindingResult): String {
+    fun showCheckoutPage(
+        authentication: Authentication?,
+        model: Model,
+        @ModelAttribute("shippingDetails") shippingDetails: ShippingDetails?,
+        bindingResult: BindingResult
+    ): String {
         val userDetails = authenticationUtils.getUserDetailsFromAuthentication(authentication)
         if (userDetails == null) {
             log.warn("User not authenticated. Redirecting to login page.")
@@ -55,14 +63,14 @@ class CheckoutController(
 
         model.addAttribute("grandTotal", grandTotal);
         model.addAttribute("cartItems", sortedCartItems)
-        model.addAttribute("shippingDetails", shippingDetails ?: ShippingDetails("","","","","","",""))
+        model.addAttribute("shippingDetails", shippingDetails ?: ShippingDetails("", "", "", "", "", "", ""))
 
         // If there are errors, add the BindingResult to the model
         // Validate ShippingDetails
         val shippingErrors = shippingDetails?.validate()
         if (shippingErrors != null) {
             for (error in shippingErrors) {
-                bindingResult.rejectValue(error.first,"error.shippingDetails", error.second)
+                bindingResult.rejectValue(error.first, "error.shippingDetails", error.second)
             }
         }
         if (bindingResult.hasErrors()) {
@@ -72,41 +80,189 @@ class CheckoutController(
         return "checkout"
     }
 
-    @GetMapping("/process-checkout")
-    fun processCheckout(authentication: Authentication?,
+    @PostMapping("/process-checkout")
+    fun processCheckout(
+        authentication: Authentication?,
+        @ModelAttribute shippingDetails: ShippingDetails,
+        bindingResult: BindingResult,
+        paymentMethod: String,
+        redirectAttributes: RedirectAttributes,
+        model: Model
+    ): String {
+        try {
+            val userDetails = authenticationUtils.getUserDetailsFromAuthentication(authentication)
 
-                        model: Model): String {
-        val userDetails = authenticationUtils.getUserDetailsFromAuthentication(authentication)
-        if (userDetails == null) {
-            log.warn("User not authenticated. Redirecting to login page.")
-            return "login"
+            if (userDetails == null) {
+                log.warn("User not authenticated. Redirecting to login page.")
+                return "login"
+            }
+
+            // Validate ShippingDetails
+            val shippingErrors = shippingDetails.validate()
+
+            for (error in shippingErrors) {
+                bindingResult.rejectValue(error.first, "error.shippingDetails", error.second)
+            }
+
+            if (bindingResult.hasErrors()) {
+                log.error("Validation errors: ${bindingResult.allErrors}");
+
+                // Add attributes to redirectAttributes
+                redirectAttributes.addFlashAttribute("shippingDetails", shippingDetails);
+                redirectAttributes.addFlashAttribute(
+                    "org.springframework.validation.BindingResult.shippingDetails",
+                    bindingResult
+                );
+
+                return "redirect:/checkout";
+            }
+            val userId = userDetails.getUserID()
+
+            val cartItems = cartService.getCartItems(defaultSessionId, userId)
+            val orderId = UUID.randomUUID()
+            log.info("gen orderId: $orderId")
+
+            for (item in cartItems) {
+                log.info("item ${item.sku} ${item.quantity}")
+                val reserved = inventoryRepository.reserveInventory(item.sku, item.quantity)
+                log.info("reserved $reserved")
+
+                if (reserved) {
+                    inventoryRepository.saveOrderReservation(orderId.toString(), item.sku, item.quantity)
+                } else {
+                    model.addAttribute("errorMessage", "Failed to reserve inventory for SKU: ${item.sku}")
+                    return "error"
+                }
+            }
+            val command = PlaceOrderCommand(orderId, userId, null, shippingDetails, paymentMethod)
+
+            val result = orderProcessingService.placeOrder(command)
+
+            return when (result) {
+                is OrderSuccess -> {
+                    return "redirect:/checkout-payment" + "?orderId=${result.orderId}";
+                }
+                is OrderFailure -> {
+                    model.addAttribute("orderSuccess", false)
+                    model.addAttribute("errorMessage", result.reason)
+                    "orderError"
+                }
+            }
+        } catch (e: StockInsufficientException) {
+            log.error("Stock insufficient error", e)
+            throw e
+        } catch (e: Exception) {
+            log.error("Error occurred", e)
+            return "redirect:/error"
         }
+    }
 
-        val cartItems = cartService.getCartItems(defaultSessionId, userDetails.getUserID())
-        for (item in cartItems) {
-            log.info("item ${item.sku} ${item.quantity}")
-            val reserved = inventoryRepository.reserveInventory(item.sku, item.quantity)
-            if (!reserved) {
-                model.addAttribute("errorMessage", "Failed to reserve inventory for SKU: ${item.sku}")
+    @GetMapping("/checkout-payment")
+    fun processCheckoutPayment(
+        authentication: Authentication?,
+        redirectAttributes: RedirectAttributes,
+        orderId: String,
+        model: Model
+    ): String {
+        try {
+            val userDetails = authenticationUtils.getUserDetailsFromAuthentication(authentication)
+
+            if (userDetails == null) {
+                log.warn("User not authenticated. Redirecting to login page.")
+                return "login"
+            }
+
+            val order = orderQueryService.retrieveOrderById(UUID.fromString(orderId))
+
+            if (order == null) {
+                log.warn("Order with ID $orderId not found.")
+                model.addAttribute("errorMessage", "Order not found.")
+                return "error" // or redirect to an appropriate error page
+            }
+
+            log.info("Retrieved order: $order")
+            model.addAttribute("order", order.order)
+            model.addAttribute("payments", order.payments)
+
+            val payment = getPendingPayment(order)
+
+            log.info("get payment $payment")
+            if(payment == null) {
+                model.addAttribute("errorMessage", "Can't not get pending payment for this order!")
+                return "/error"
+            }
+
+            val paymentMomo = PaymentMomo()
+
+            val baseUrl = getBaseUrl()
+
+            val callbackUrl = "$baseUrl/query-payment"
+            val notifyUrl = "$baseUrl/notify-payment"
+
+            val payUrl = paymentMomo.createPaymentRequest(
+                payment.id.toString(),
+                orderId,
+                payment.totalAmount.toLong(),
+                order.order.userID.toString(),
+                callbackUrl,
+                notifyUrl
+            )
+
+            return "redirect:${payUrl}"
+
+        } catch (e: Exception) {
+            log.error("Error occurred", e)
+            return "redirect:/error"
+        }
+    }
+
+    @GetMapping("/query-payment")
+    fun queryCheckoutPayment(
+        authentication: Authentication?,
+        redirectAttributes: RedirectAttributes,
+        orderId: String,
+        requestId: String,
+        model: Model
+    ): String {
+        try {
+            val orderId = UUID.fromString(orderId)
+            val requestId = UUID.fromString(requestId)
+
+            val order = orderQueryService.retrieveOrderById(orderId)
+            if (order == null) {
+                log.warn("Order with ID $orderId not found.")
+                model.addAttribute("errorMessage", "Order not found.")
                 return "error"
             }
-        }
+            log.info("Retrieved order: $order")
 
-        // Simulate payment processing
-        val paymentSuccess = simulatePaymentProcess()
-        if (paymentSuccess) {
-            log.info("Payment success!!!!!!!!!")
+            model.addAttribute("order", order.order)
+            model.addAttribute("payments", order.payments)
 
-            val orderSuccess = true;
+            val payment = getPendingPayment(order)
 
-            if (orderSuccess) {
-                val userId = userDetails.getUserID()
+            log.info("get payment $payment")
+            if(payment == null) {
+                model.addAttribute("errorMessage", "Can't not get pending payment for this order!")
+                return "/error"
+            }
 
-                val shippingDetails = ShippingDetails("test","test","test","test","test","test", "test")
-                val command = PlaceOrderCommand(userId, null, shippingDetails)
-                //
-                val result = orderProcessingService.placeOrder(command)
+            val paymentMomo = PaymentMomo()
+            val message = paymentMomo.queryPaymentRequest(
+                orderId.toString(),
+                requestId.toString(),
+            )
 
+            log.info("message $message")
+
+            if(message.equals("Successful.", ignoreCase = true)) {
+                order.order.updateOrderStatus(Order.OrderStatus.PROCESSING)
+                val result = orderProcessingService.updatePaymentAndOrderStatus(
+                    payment.id,
+                    PaymentStatus.COMPLETED,
+                    order.order,
+                    true
+                )
                 return when (result) {
                     is OrderSuccess -> {
                         model.addAttribute("orderSuccess", true)
@@ -116,39 +272,31 @@ class CheckoutController(
                         "orderConfirmation"
                     }
                     is OrderFailure -> {
-                        model.addAttribute("orderSuccess", false)
-                        model.addAttribute("errorMessage", result.reason)
-                        "orderError"
+                        order.order.updateOrderStatus(Order.OrderStatus.CANCELLED)
+                        val result = orderProcessingService.updatePaymentAndOrderStatus(
+                            payment.id,
+                            PaymentStatus.FAILED,
+                            order.order,
+                            false
+                        )
+                        model.addAttribute("errorMessage", "Failed to finalize the order.")
+
+                        return "error"
                     }
                 }
-
-                return "error"
             } else {
-                // If there's an issue finalizing the order, release the reserved inventory
-                cartItems.forEach { item ->
-                    inventoryRepository.releaseInventory(item.sku, item.quantity)
-                }
-                model.addAttribute("errorMessage", "Failed to finalize the order.")
+
+                model.addAttribute("errorMessage", "Failed payment!")
                 return "error"
             }
-        } else {
-            // If payment fails, release the reserved inventory
-            cartItems.forEach { item ->
-                inventoryRepository.releaseInventory(item.sku, item.quantity)
-            }
-            model.addAttribute("errorMessage", "Payment failed.")
-            return "checkoutError"
+
+        } catch (e: Exception) {
+            log.error("Error occurred", e)
+            return "redirect:/error"
         }
     }
 
     // Simulate a payment process
-    fun simulatePaymentProcess(): Boolean {
-        // Here, you'd typically integrate with a payment gateway or provider.
-        // For the sake of this example, we'll simulate a successful payment.
-        return true
-    }
-
-
 
     @GetMapping("/test222")
     fun processCheckout2(authentication: Authentication?, model: Model): String {
@@ -170,7 +318,20 @@ class CheckoutController(
         return "checkoutSuccess" // or "checkoutError"
     }
 
+    fun getPendingPayment(orderWithPayment: OrderWithPayment): Payment? {
+        if (orderWithPayment.order.orderStatus != Order.OrderStatus.PENDING) {
+            throw Exception("Order is not in pending status!")
+        }
+        return orderWithPayment.payments.firstOrNull {
+                it.orderID == orderWithPayment.order.id
+                && it.paymentStatus == PaymentStatus.PENDING }
+    }
 
+    fun getBaseUrl(): String {
+        val requestURL = StringBuffer(request.requestURL.toString())
+        val servletPath = request.servletPath
+        return requestURL.substring(0, requestURL.indexOf(servletPath))
+    }
 
     companion object {
         private val log = LoggerFactory.getLogger(CheckoutController::class.java)

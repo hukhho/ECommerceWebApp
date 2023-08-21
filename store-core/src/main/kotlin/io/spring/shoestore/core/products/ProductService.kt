@@ -14,7 +14,6 @@ class ProductService(private val repository: ProductRepository) {
         } else {
             val keywordResults = repository.findByKeyword(query.byKeyword ?: "")
             //search price still not implement
-
             return keywordResults
         }
     }

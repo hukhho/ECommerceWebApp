@@ -16,7 +16,7 @@ class PostgresProductRepository(private val jdbcTemplate: JdbcTemplate) : Produc
     override fun create(product: Product): Boolean {
         val affectedRows = jdbcTemplate.update(
             "INSERT INTO tbl_Product (id, categoryID, productCode, name, description, imageURL, price) VALUES (?, ?, ?, ?, ?, ?, ?);",
-            product.id.value,
+            product.id?.value,
             product.categoryID.value,
             product.productCode,
             product.name,
@@ -45,16 +45,25 @@ class PostgresProductRepository(private val jdbcTemplate: JdbcTemplate) : Produc
             productMapper
         )
     }
+
     override fun update(product: Product): Boolean {
         val affectedRows = jdbcTemplate.update(
-            "UPDATE tbl_Product SET categoryID = ?, productCode = ?, name = ?, description = ?, imageURL = ?, price = ? WHERE id = ? AND isDelete = FALSE;",
+            "UPDATE tbl_Product " +
+                    "SET categoryID = ?, " +
+                    "productCode = ?, " +
+                    "name = ?, " +
+                    "description = ?, " +
+                    "imageURL = ?, " +
+                    "price = ? " +
+                    " WHERE id = ? " +
+                    " AND isDelete = FALSE;",
             product.categoryID.value,
             product.productCode,
             product.name,
             product.description,
             product.imageURL,
             product.price,
-            product.id.value
+            product.id?.value
         )
         return affectedRows > 0
     }
@@ -85,13 +94,15 @@ class PostgresProductRepository(private val jdbcTemplate: JdbcTemplate) : Produc
 
     override fun findByKeyword(keywordPartial: String): List<Product> {
         return jdbcTemplate.query(
-            "SELECT p.*, c.name AS categoryName FROM tbl_Product p " +
+            "SELECT p.*, c.name AS categoryName " +
+                    "FROM tbl_Product p " +
                     "INNER JOIN tbl_Category c ON p.categoryID = c.id " +
-                    "WHERE p.name ILIKE ? " +
-                    "OR p.description ILIKE ? " +
-                    "OR c.name ILIKE ? " +
-                    "OR p.productCode ILIKE ? " +
-                    "AND isDelete = FALSE;",
+                    "WHERE " +
+                    "    (p.name ILIKE ? " +
+                    "    OR p.description ILIKE ? " +
+                    "    OR c.name ILIKE ? \n" +
+                    "    OR p.productCode ILIKE ?)" +
+                    "AND p.isDelete = FALSE;",
             productMapper,
             "%$keywordPartial%",
             "%$keywordPartial%",
@@ -104,7 +115,7 @@ class PostgresProductRepository(private val jdbcTemplate: JdbcTemplate) : Produc
         return jdbcTemplate.query(
             "SELECT p.*, c.name AS categoryName FROM tbl_Product p " +
                     "INNER JOIN tbl_Category c ON p.categoryID = c.id " +
-                    "WHERE p.price <= ?;",
+                    "WHERE p.price <= ? AND p.isDelete = FALSE;",
             productMapper,
             upperPrice
         )

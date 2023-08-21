@@ -1,9 +1,6 @@
 package io.spring.shoestore.postgres
 
-import io.spring.shoestore.core.orders.Order
-import io.spring.shoestore.core.orders.OrderRepository
-import io.spring.shoestore.core.orders.OrderWithPayment
-import io.spring.shoestore.core.orders.StockInsufficientException
+import io.spring.shoestore.core.orders.*
 import io.spring.shoestore.core.users.UserId
 import io.spring.shoestore.postgres.mappers.*
 import org.slf4j.LoggerFactory
@@ -24,14 +21,14 @@ open class PostgresOrderRepository(private val jdbcTemplate: JdbcTemplate): Orde
     private val paymentMapper = PaymentMapper()
 
     @Transactional
-    override fun submitOrder(order: Order): Boolean {
+    override fun submitOrder(order: Order, paymentMethod: String): Boolean {
         return try {
             // 1. Determine the Products and Quantities Ordered
             val orderedItems = order.getItems()
 
             // 2. Update the Product Variant Table
             for (item in orderedItems) {
-                val sku = item.sku.value
+                val sku = item.sku
                 val orderedQuantity = item.quantity
 
                 // Check if there's enough stock
@@ -52,6 +49,7 @@ open class PostgresOrderRepository(private val jdbcTemplate: JdbcTemplate): Orde
 //                    orderedQuantity,
 //                    sku
 //                )
+
             }
 
             // Persist the order
@@ -84,7 +82,7 @@ open class PostgresOrderRepository(private val jdbcTemplate: JdbcTemplate): Orde
                     override fun setValues(ps: PreparedStatement, i: Int) {
                         val lineItem = order.getItems()[i]
                         ps.setObject(1, order.id)
-                        ps.setString(2, lineItem.sku.value)
+                        ps.setString(2, lineItem.sku)
                         ps.setInt(3, lineItem.quantity)
                         ps.setBigDecimal(4, lineItem.subtotal)
                     }
@@ -92,6 +90,22 @@ open class PostgresOrderRepository(private val jdbcTemplate: JdbcTemplate): Orde
                     override fun getBatchSize(): Int = order.getItems().size
                 }
             )
+//            orderID UUID NULL,
+//            paymentDate TIMESTAMP NULL,
+//            paymentMethod VARCHAR(50) NULL,
+//            totalAmount DECIMAL(10, 2) NOT NULL,
+//            paymentStatus VARCHAR(50) NULL,
+                jdbcTemplate.update(
+                    "INSERT INTO tbl_Payment (orderID, paymentDate, paymentMethod, totalAmount, paymentStatus) " +
+                            " VALUES(?, ?, ?, ?, ?) ",
+                    order.id,
+                    null,
+                    paymentMethod,
+                    order.totalAmount,
+                    "Pending"
+                )
+
+
             true
         } catch (e: Exception) {
             log.error("Error while submitting order", e)
@@ -210,6 +224,56 @@ open class PostgresOrderRepository(private val jdbcTemplate: JdbcTemplate): Orde
             quantity,
             sku
         ) > 0
+    }
+
+    @Transactional
+    override fun updatePaymentAndOrderStatus(paymentId: UUID, paymentStatus: PaymentStatus, order: Order, reduceProduct: Boolean): Boolean {
+        return try {
+
+            val updatedPaymentRows = jdbcTemplate.update(
+                "UPDATE tbl_Payment SET paymentStatus = ? WHERE id = ?",
+                paymentStatus.description,
+                paymentId
+            )
+
+            val updatedOrderRows = jdbcTemplate.update(
+                "UPDATE tbl_Order SET status = ? WHERE id = ?",
+                order.orderStatus.description,
+                order.id
+            )
+
+            val orderedItems = order.getItems()
+            // 2. Update the Product Variant Table
+            var quantityAvailableRows = 0
+
+            for (item in orderedItems) {
+                val sku = item.sku
+                val orderedQuantity = item.quantity
+                // Check if there's enough stock
+                val currentQuantity = jdbcTemplate.queryForObject(
+                    "SELECT quantityAvailable FROM tbl_Product_Variation WHERE sku = ?",
+                    Int::class.java,
+                    sku
+                ) ?: 0
+                if (currentQuantity < orderedQuantity) {
+                    throw StockInsufficientException("Not enough stock for SKU: $sku")
+                }
+                //Decrease the quantityAvailable
+                if(reduceProduct){
+                    quantityAvailableRows += jdbcTemplate.update(
+                        "UPDATE tbl_Product_Variation SET quantityAvailable = quantityAvailable - ? WHERE sku = ?",
+                        orderedQuantity,
+                        sku
+                    )
+                } else {
+                    quantityAvailableRows = 1
+                }
+            }
+            updatedPaymentRows > 0 && updatedOrderRows > 0 && quantityAvailableRows > 0
+        } catch (e: Exception) {
+            log.error("Error while updating payment and order statuses and decrease the quantityAvailable", e)
+            false
+        }
     }
 
     companion object {

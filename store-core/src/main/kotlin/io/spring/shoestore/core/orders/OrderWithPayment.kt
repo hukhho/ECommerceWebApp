@@ -13,7 +13,6 @@ data class Payment(
     val paymentStatus: PaymentStatus
 )
 
-
 enum class PaymentMethod(val method: String) {
     MOMO("MOMO"),
     VNPAY("VNPAY"),

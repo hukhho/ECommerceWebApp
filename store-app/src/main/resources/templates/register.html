@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+
+</head>
+
+<body class="bg-gray-100">
+
+<div class="flex h-screen">
+
+  <!-- Main Content -->
+  <div class="flex-1 p-8">
+    <div class="bg-white p-6 rounded shadow w-full max-w-3xl mx-auto">
+      <h2 class="text-3xl font-bold mb-6 text-center">Create User</h2>
+      <form th:action="@{/user/create}" th:object="${user}" method="post">
+        <!-- Username -->
+        <div class="mb-4">
+          <label for="username" class="block text-sm font-medium text-gray-700">
+            Username: <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="username" th:field="*{username}" class="mt-1 p-2 w-full border rounded-md">
+          <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="text-red-500 text-xs mt-1"></span>
+        </div>
+
+        <!-- Email -->
+        <div class="mb-4">
+          <label for="email" class="block text-sm font-medium text-gray-700">
+            Email: <span class="text-red-500">*</span>
+          </label>
+          <input type="email" id="email" th:field="*{email}" class="mt-1 p-2 w-full border rounded-md">
+          <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-red-500 text-xs mt-1"></span>
+        </div>
+
+        <!-- Full Name -->
+        <div class="mb-4">
+          <label for="fullName" class="block text-sm font-medium text-gray-700">
+            Full Name: <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="fullName" th:field="*{fullName}" class="mt-1 p-2 w-full border rounded-md">
+          <span th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}" class="text-red-500 text-xs mt-1"></span>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-4">
+          <label for="password" class="block text-sm font-medium text-gray-700">
+            Password: <span class="text-red-500">*</span>
+          </label>
+          <input type="password" id="password" th:field="*{password}" class="mt-1 p-2 w-full border rounded-md">
+          <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-red-500 text-xs mt-1"></span>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="mb-4">
+          <label for="confirmPassword" class="block text-sm font-medium text-gray-700">
+            Confirm Password: <span class="text-red-500">*</span>
+          </label>
+          <input type="password" id="confirmPassword" th:field="*{confirmPassword}" class="mt-1 p-2 w-full border rounded-md">
+          <span th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}" class="text-red-500 text-xs mt-1"></span>
+        </div>
+        <!-- Role ID -->
+        <div class="mb-4">
+          <label for="roleID" class="block text-sm font-medium text-gray-700">
+            Role ID: <span th:if="${#fields.hasErrors('roleID')}" class="text-red-500">*</span>
+          </label>
+          <input type="text" id="roleID" th:field="*{roleID}" class="mt-1 p-2 w-full border rounded-md">
+          <span th:if="${#fields.hasErrors('roleID')}" th:errors="*{roleID}" class="text-red-500 text-xs mt-1"></span>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="mt-6">
+          <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Create</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+</body>
+</html>

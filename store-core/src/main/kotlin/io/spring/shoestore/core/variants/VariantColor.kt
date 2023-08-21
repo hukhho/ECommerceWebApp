@@ -7,7 +7,6 @@ enum class VariantColor(val code: String) {
     BLUE("Blue"),
     RED("Red"),
     NA("N/A");
-
     companion object {
         fun lookup(code: String): VariantColor? {
             return values().find { it.code == code }

@@ -1,9 +1,21 @@
 package io.spring.shoestore.core.users
 
+import io.spring.shoestore.core.exceptions.RepositoryException
+import io.spring.shoestore.core.exceptions.ServiceException
+import org.slf4j.LoggerFactory
+
 class UserService(private val repository: UserRepository) {
+    private val logger = LoggerFactory.getLogger(UserService::class.java)
 
     // parse query
-    fun getByUsername(username: String): User? = repository.findByUsername(username)
+    fun findByUsername(username: String): User? = repository.findByUsername(username)
+    fun findByEmail(email: String): User? {
+        return try {
+            repository.findByEmail(email)
+        } catch (ex: Exception) {
+            null
+        }
+    }
 
     fun get(id: UserId): User? = repository.findById(id)
 
@@ -12,10 +24,55 @@ class UserService(private val repository: UserRepository) {
             return repository.list()
         } else {
             val nameResults = repository.findByName(query.byName ?: "")
-            // todo: price
+
             return nameResults
         }
     }
+
+    fun save(user: User) {
+        try {
+            logger.info("Attempting to save user: $user")
+            repository.save(user)
+            logger.info("User saved successfully: $user")
+            } catch (e: RepositoryException) {
+            val errorMessage = "Error saving user: ${e.message}"
+            logger.error(errorMessage, e)
+            throw ServiceException(errorMessage)
+        } catch (e: Exception) {
+            val errorMessage = "General error saving user: ${e.message}"
+            logger.error(errorMessage, e)
+            throw ServiceException(errorMessage)
+        }
+    }
+
+    fun update(user: UserUpdate): Boolean? {
+        try {
+            logger.info("Updating user: $user")
+            val user = repository.update(user)
+            return true
+            logger.info("User updated successfully: $user")
+        } catch (e: Exception) {
+            logger.info("Error user update: ${user.id}. Error: ${e.message}")
+            return null
+        }
+    }
+
+    fun deleteById(id: UserId): Boolean {
+        return try {
+            logger.info("Deleting user with ID: ${id.value}")
+            val result = repository.deleteById(id)
+            if (result) {
+                logger.info("User with ID: ${id.value} deleted successfully")
+            } else {
+                logger.warn("No user found with ID: ${id.value}")
+            }
+            result
+        } catch (e: Exception) {
+            logger.error("Error deleting user with ID: ${id.value}. Error: ${e.message}", e)
+            false
+        }
+    }
+
 }
 
 

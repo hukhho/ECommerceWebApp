@@ -21,10 +21,11 @@ class CustomAuthenticationSuccessHandler : AuthenticationSuccessHandler {
     ) {
         val authorities = authentication?.authorities
 
+        log.info("User has AD authority. Redirecting to /admin/dashboard.")
+
         var targetUrl = "/"
         authorities?.forEach { authority ->
             when {
-
                 authority.authority.contains("AD") -> {
                     log.info("User has AD authority. Redirecting to /admin/dashboard.")
                     targetUrl = "/admin/dashboard"

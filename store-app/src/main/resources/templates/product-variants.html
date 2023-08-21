@@ -31,7 +31,7 @@
                 <label for="colorSelect" class="block font-semibold mb-2">Color:</label>
                 <select name="sku" id="colorSelect" class="w-full border rounded p-2 mb-4">
                     <option value="">Select Color And Size</option>
-                    <option th:each="variant : ${listVariant}" th:value="${variant.sku.value}">
+                    <option th:each="variant : ${listVariant}" th:value="${variant.sku}">
                         <span th:text="${variant.color}"></span> - <span th:text="${variant.size}"></span>
                     </option>
                 </select>
@@ -54,10 +54,10 @@
             </thead>
             <tbody class="bg-white">
             <tr th:each="variant : ${listVariant}">
-                <td class="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500" th:text="${variant.sku.value}"></td>
+                <td class="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500" th:text="${variant.sku}"></td>
                 <td class="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500" th:text="${variant.color.code}"></td>
                 <td class="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500" th:text="${variant.size.code}"></td>
-                <td class="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500" th:text="${variant.quantityAvailable.value}"></td>
+                <td class="px-6 py-4 whitespace-no-wrap text-sm leading-5 text-gray-500" th:text="${variant.quantityAvailable}"></td>
             </tr>
             </tbody>
         </table>
