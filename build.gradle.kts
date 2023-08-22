@@ -56,9 +56,7 @@ subprojects {
 		implementation("javax.validation:validation-api:2.0.1.Final")
 		implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
-		if (System.getProperty("idea.active") == "false") {
-			implementation("ch.qos.logback:logback-classic:1.2.6")
-		}
+		implementation("ch.qos.logback:logback-classic:1.2.6")
 
 //		implementation("ch.qos.logback:logback-classic:1.2.6")
 //		implementation("org.springframework.boot:spring-boot-starter-data-jpa")
