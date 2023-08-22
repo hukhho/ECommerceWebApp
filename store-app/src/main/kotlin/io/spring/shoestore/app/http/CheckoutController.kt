@@ -3,6 +3,8 @@ package io.spring.shoestore.app.http
 import PlaceOrderCommand
 import ShippingDetails
 import io.spring.shoestore.app.config.AuthenticationUtils
+import io.spring.shoestore.app.exception.AppException
+import io.spring.shoestore.app.utils.EmailService
 import io.spring.shoestore.core.cart.CartService
 import io.spring.shoestore.core.cart.SessionId
 import io.spring.shoestore.core.orders.*
@@ -11,6 +13,7 @@ import io.spring.shoestore.payment.PaymentMomo
 import io.spring.shoestore.redis.RedisInventoryWarehousingRepository
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -33,6 +36,8 @@ class CheckoutController(
     private val request: HttpServletRequest
 ) {
     val defaultSessionId = SessionId.from("00000000-0000-0000-0000-000000000000")
+    @Autowired
+    private lateinit var emailService: EmailService
 
     @GetMapping("/checkout")
     fun showCheckoutPage(
@@ -225,6 +230,12 @@ class CheckoutController(
         model: Model
     ): String {
         try {
+            val userDetails = authenticationUtils.getUserDetailsFromAuthentication(authentication)
+
+            if (userDetails == null) {
+                log.warn("User not authenticated. Redirecting to login page.")
+                return "login"
+            }
             val orderId = UUID.fromString(orderId)
             val requestId = UUID.fromString(requestId)
 
@@ -269,6 +280,17 @@ class CheckoutController(
                         model.addAttribute("orderId", result.orderId)
                         model.addAttribute("orderDate", result.orderDate)
                         model.addAttribute("totalAmount", result.totalAmount)
+                        try {
+                            emailService.sendOrderConfirmationEmail(userDetails.getEmail(),
+                                result.orderId.toString(),
+                                result.orderDate.toString(),
+                                result.totalAmount)
+                            log.error("Send mail confirm order to ${userDetails.getEmail()} successfully.")
+                        } catch (e: Exception) {
+                            log.error("Error occurred sendOrderConfirmationEmail. Error: ", e)
+                        } catch (e: AppException) {
+                            log.error("Error occurred sendOrderConfirmationEmail. Error: ", e)
+                        }
                         "orderConfirmation"
                     }
                     is OrderFailure -> {

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.bcrypt.BCrypt
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.stereotype.Component
@@ -44,6 +45,7 @@ class AuthenticationUtils {
             if (user == null) {
                 val randomPassword = generateRandomPassword(12)
                 val hashedPassword = BCrypt.hashpw(randomPassword, BCrypt.gensalt())
+
                 user = User(
                     id = UserId(UUID.randomUUID()),
                     username = oidcUser.nickName,
@@ -53,6 +55,7 @@ class AuthenticationUtils {
                     roleID = "US",
                     status = true
                 )
+
                 userService.save(user)
             }
 
@@ -60,6 +63,7 @@ class AuthenticationUtils {
                 username = user.username,
                 password = user.password,
                 email = user.email,
+                fullName = user.fullName,
                 userID = user.id,
                 authorities = listOf(SimpleGrantedAuthority(user.roleID))
             )
@@ -73,5 +77,18 @@ class AuthenticationUtils {
         random.nextBytes(bytes)
         return Base64.getEncoder().encodeToString(bytes)
     }
+
+    fun updateAuthenticationWithNewDetails(newFullName: String) {
+        val currentAuthentication = SecurityContextHolder.getContext().authentication
+        val currentPrincipal = currentAuthentication.principal as CustomUserDetails
+
+        currentPrincipal.setFullName(newFullName)
+
+        val newAuthentication = UsernamePasswordAuthenticationToken(
+            currentPrincipal, currentAuthentication.credentials, currentAuthentication.authorities
+        )
+        SecurityContextHolder.getContext().authentication = newAuthentication
+    }
+
 
 }

@@ -6,9 +6,9 @@
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
 </head>
 
-<div th:replace="~{'fragments/header' :: header}"></div>
 
 <body class="bg-gray-100 h-screen">
+<div th:replace="~{'fragments/header' :: header}"></div>
 <div class="bg-white p-6 rounded shadow w-full max-w-3xl mx-auto mt-20 mb-20 h-screen">
     <h2 class="text-3xl font-bold mb-6 text-center">Your Orders</h2>
 
@@ -33,7 +33,6 @@
         </tbody>
     </table>
 </div>
-
+<div th:replace="~{'fragments/footer' :: footer}"></div>
 </body>
 
-<div th:replace="~{'fragments/footer' :: footer}"></div>

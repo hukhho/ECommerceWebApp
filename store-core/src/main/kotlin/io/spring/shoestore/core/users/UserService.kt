@@ -31,6 +31,19 @@ class UserService(private val repository: UserRepository) {
 
     fun save(user: User) {
         try {
+            val userCheck = repository.findByEmail(user.email)
+
+            if (userCheck != null) {
+                if (userCheck.isDelete) {
+                    val user = UserUpdate(userCheck.id, userCheck.username,
+                        userCheck.email,
+                        userCheck.fullName,
+                        userCheck.roleID,
+                        userCheck.status)
+                    repository.update(user)
+                }
+            }
+
             logger.info("Attempting to save user: $user")
             repository.save(user)
             logger.info("User saved successfully: $user")

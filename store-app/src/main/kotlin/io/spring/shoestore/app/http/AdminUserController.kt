@@ -1,8 +1,10 @@
 package io.spring.shoestore.app.http
 
+import io.spring.shoestore.app.config.AuthenticationUtils
 import io.spring.shoestore.core.exceptions.ServiceException
 import io.spring.shoestore.core.users.*
 import org.slf4j.LoggerFactory
+import org.springframework.security.core.Authentication
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -14,8 +16,9 @@ import java.util.*
 @Controller
 @RequestMapping("/admin")
 class AdminUserController(
-    private val userService: UserService
-) {
+    private val userService: UserService,
+    private val authenticationUtils: AuthenticationUtils,
+    ) {
     private val log = LoggerFactory.getLogger(this.javaClass)
 
     @GetMapping("/users")
@@ -124,6 +127,7 @@ class AdminUserController(
         @PathVariable id: String,
         @ModelAttribute userUpdate: UserUpdate,
         model: Model,
+        authentication: Authentication?,
         bindingResult: BindingResult,
         redirectAttributes: RedirectAttributes
     ): String {
@@ -152,6 +156,15 @@ class AdminUserController(
 
             userService.update(userUpdate)
 
+            val userDetails = authenticationUtils.getUserDetailsFromAuthentication(authentication)
+            if (userDetails == null) {
+                model.addAttribute("errorMessage", "Error when update user. Can authenticated account")
+                return "error"
+            }
+            if (userDetails.getUserID() == userUpdate.id) {
+                authenticationUtils.updateAuthenticationWithNewDetails(userUpdate.fullName)
+            }
+
         } catch (e: ServiceException) {
             log.error("Caught ServiceException during user update: ${e.message}", e)
             redirectAttributes.addFlashAttribute(
@@ -172,9 +185,30 @@ class AdminUserController(
 
     // Delete User
     @GetMapping("/user/{id}/delete")
-    fun deleteUser(@PathVariable id: String): String {
-        userService.deleteById(UserId.from(id))
-        return "redirect:/admin/users"
+    fun deleteUser(
+        authentication: Authentication?,
+        model: Model,
+        redirectAttributes: RedirectAttributes,
+        @PathVariable id: String): String {
+        try {
+            val userDetails = authenticationUtils.getUserDetailsFromAuthentication(authentication)
+            if (userDetails == null) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Error when update user. Can authenticated account")
+                return "error"
+            }
+            if (userDetails.getUserID() == UserId.from(id)) {
+                redirectAttributes.addFlashAttribute("errorMessage",
+                    "Can't delete current login account!")
+                return "redirect:/admin/users"
+            }
+
+            userService.deleteById(UserId.from(id))
+            return "redirect:/admin/users"
+        } catch (e: Exception) {
+            log.info("Error at delete user ${e.message}")
+            return "error"
+        }
+
     }
 
     private fun convertUserToUserUpdate(domain: User): UserUpdate = UserUpdate(

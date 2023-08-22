@@ -54,16 +54,17 @@ subprojects {
 		implementation("org.flywaydb:flyway-core:9.16.3")
 		implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.20")
 		implementation("javax.validation:validation-api:2.0.1.Final")
+
 		implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
-		implementation("ch.qos.logback:logback-classic:1.2.6")
+//		implementation("ch.qos.logback:logback-classic:1.2.6")
 
 //		implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
 		implementation("org.hibernate.validator:hibernate-validator:6.1.5.Final")
 
-		testImplementation("org.junit.jupiter:junit-jupiter-api:${project.extra["junitVersion"]}")
-		testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${project.extra["junitVersion"]}")
+//		testImplementation("org.junit.jupiter:junit-jupiter-api:${project.extra["junitVersion"]}")
+//		testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${project.extra["junitVersion"]}")
 
 	}
 }

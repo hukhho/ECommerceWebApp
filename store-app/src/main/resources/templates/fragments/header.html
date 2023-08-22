@@ -55,7 +55,7 @@
                         <button type="submit" class="logout-button text-white rounded px-2 py-1">Logout</button>
                     </form>
                 </div>
-                <a class="header-link" href="#" sec:authorize="!isAuthenticated()">Register</a>
+                <a class="header-link" th:href="@{/register}" sec:authorize="!isAuthenticated()">Register</a>
             </div>
         </div>
     </div>

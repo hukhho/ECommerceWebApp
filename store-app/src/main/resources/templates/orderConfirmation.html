@@ -1,25 +1,35 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <title>Order Confirmation</title>
-  <link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-<div class="container">
-  <h2>Order Confirmation</h2>
-  <p>Thank you for your order!</p>
 
-  <div class="order-details">
-    <h3>Order Details:</h3>
-    <p><strong>Order Id:</strong> <span th:text="${orderId}"></span></p>
-    <p><strong>Order Date:</strong> <span th:text="${orderDate}"></span></p>
-    <p><strong>Total Amount:</strong> <span th:text="${totalAmount}"></span></p>
+<body class="bg-gray-100 p-8">
+<div th:replace="~{'fragments/header' :: header}"></div>
+
+<div class="bg-white p-6 rounded shadow w-full max-w-3xl mx-auto">
+  <h1 class="text-3xl font-bold mb-6 text-center">Order Confirmation</h1>
+
+  <div class="border-b pb-4 mb-4">
+    <h2 class="text-xl font-semibold mb-2">Order Details</h2>
+    <div class="grid grid-cols-2 gap-4">
+      <p><strong class="font-medium">Order Id:</strong> <span th:text="${orderId}"></span></p>
+      <p><strong class="font-medium">Order Date:</strong> <span th:text="${orderDate}"></span></p>
+      <p><strong class="font-medium">Total Amount:</strong> <span th:text="${totalAmount}"></span></p>
+    </div>
   </div>
-Y1
-  <div class="actions">
-    <a th:href="@{/shop}" class="btn">Continue Shopping</a>
-    <a th:href="@{/orders}" class="btn">View My Orders</a>
+
+  <div class="border-b pb-4 mb-4">
+    <h2 class="text-xl font-semibold mb-2">Actions</h2>
+    <div class="flex space-x-4">
+      <a th:href="@{/products}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Continue Shopping</a>
+      <a th:href="@{/orders}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">View My Orders</a>
+    </div>
   </div>
 </div>
+<div th:replace="~{'fragments/footer' :: footer}"></div>
+
 </body>
 </html>

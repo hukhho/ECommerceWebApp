@@ -19,9 +19,7 @@ class CustomAuthenticationFailureHandler : AuthenticationFailureHandler {
         response: HttpServletResponse?,
         exception: AuthenticationException?
     ) {
-
-        request?.session?.setAttribute("error", "Bad credentials")
-
-        redirectStrategy.sendRedirect(request, response, "/log  in?error=true")
+        request?.session?.setAttribute("loginError", "Bad credentials")
+        redirectStrategy.sendRedirect(request, response, "/login?error=true")
     }
 }

@@ -70,6 +70,10 @@
           <span th:if="${#fields.hasErrors('roleID')}" th:errors="*{roleID}" class="text-red-500 text-xs mt-1" readonly=""></span>
         </div>
 
+
+        <a th:href="@{/login}" class="block w-full text-center text-blue-500 hover:text-blue-600 no-underline mt-4">Back to login</a>
+        <a th:href="@{/products}" class="block w-full text-center text-blue-500 hover:text-blue-600 no-underline mt-4">Back to shopping</a>
+
         <!-- Submit Button -->
         <div class="mt-6">
           <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Create</button>

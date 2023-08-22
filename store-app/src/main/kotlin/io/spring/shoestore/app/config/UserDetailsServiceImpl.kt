@@ -24,6 +24,7 @@ class UserDetailsServiceImpl(
             username = user.username,
             password = user.password,
             email = user.email,
+            fullName = user.fullName,
             userID = user.id,
             authorities = listOf(SimpleGrantedAuthority(user.roleID.toString()))
         )

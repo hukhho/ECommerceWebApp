@@ -8,6 +8,7 @@ class CustomUserDetails(
     private val username: String,
     private val password: String,
     private val email: String,
+    private var fullName: String,
     private val userID: UserId,
     private val authorities: Collection<GrantedAuthority>
 ) : UserDetails {
@@ -42,7 +43,12 @@ class CustomUserDetails(
     fun getEmail(): String {
         return email
     }
-
+    fun getFullName(): String {
+        return fullName
+    }
+    fun setFullName(fullName: String) {
+        this.fullName = fullName
+    }
     fun getUserID(): UserId {
         return userID
     }
