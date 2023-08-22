@@ -22,6 +22,23 @@ data class UserUpdate(
     val roleID: String,
     val status: Boolean
 )
+class UserUpdateValidator : Validator<UserUpdate> {
+    override fun validate(data: UserUpdate): List<Pair<String, String>> {
+        val errors = mutableListOf<Pair<String, String>>()
+
+        // Validate fullName
+        if (data.fullName.isBlank() ||  data.fullName.length < 3) {
+            errors.add(Pair("fullName", "Full Name must be at least 3 characters long."))
+        }
+
+        // Validate roleID
+        if (data.roleID != "AD" && data.roleID != "US") {
+            errors.add(Pair("roleID", "Role ID must be either 'AD' or 'US'."))
+        }
+
+        return errors
+    }
+}
 data class UserCreate(
     val username: String,
     val email: String,
@@ -45,8 +62,8 @@ class UserCreateValidator : Validator<UserCreate> {
         }
 
         // Validate fullName
-        if (data.fullName.isBlank()) {
-            errors.add(Pair("fullName", "Full Name cannot be blank."))
+        if (data.fullName.isBlank() ||  data.fullName.length < 3) {
+            errors.add(Pair("fullName", "Full Name must be at least 3 characters long."))
         }
 
         // Validate password

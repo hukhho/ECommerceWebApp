@@ -6,6 +6,7 @@ import io.spring.shoestore.core.users.UserRepository
 import io.spring.shoestore.core.users.UserUpdate
 import io.spring.shoestore.postgres.mappers.UserMapper
 import org.slf4j.LoggerFactory
+import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.jdbc.core.JdbcTemplate
 
 class PostgresUserRepository(private val jdbcTemplate: JdbcTemplate) : UserRepository {
@@ -13,25 +14,39 @@ class PostgresUserRepository(private val jdbcTemplate: JdbcTemplate) : UserRepos
     private val logger = LoggerFactory.getLogger(PostgresUserRepository::class.java)
 
     override fun findByUsername(username: String): User? {
-        return jdbcTemplate.queryForObject(
-            "SELECT * FROM tbl_User WHERE username = ? AND isDelete = FALSE LIMIT 1;",
-            userMapper,
-            username
-        )
+        return try {
+            jdbcTemplate.queryForObject(
+                "SELECT * FROM tbl_User WHERE username = ? AND isDelete = FALSE LIMIT 1;",
+                userMapper,
+                username
+            )
+        } catch (e: EmptyResultDataAccessException) {
+            null
+        }
     }
+
     override fun findByEmail(email: String): User? {
-        return jdbcTemplate.queryForObject(
-            "SELECT * FROM tbl_User WHERE email = ? AND isDelete = FALSE LIMIT 1;",
-            userMapper,
-            email
-        )
+        return try {
+            jdbcTemplate.queryForObject(
+                "SELECT * FROM tbl_User WHERE email = ? AND isDelete = FALSE LIMIT 1;",
+                userMapper,
+                email
+            )
+        } catch (e: EmptyResultDataAccessException) {
+            null
+        }
     }
+
     override fun findById(id: UserId): User? {
-        return jdbcTemplate.queryForObject(
-            "SELECT * FROM tbl_User WHERE id = ? AND isDelete = FALSE LIMIT 1;",
-            userMapper,
-            id.value // Convert UUID to String
-        )
+        return try {
+            jdbcTemplate.queryForObject(
+                "SELECT * FROM tbl_User WHERE id = ? AND isDelete = FALSE LIMIT 1;",
+                userMapper,
+                id.value // Convert UUID to String
+            )
+        } catch (e: EmptyResultDataAccessException) {
+            null
+        }
     }
 
     override fun list(): List<User> {
@@ -63,13 +78,24 @@ class PostgresUserRepository(private val jdbcTemplate: JdbcTemplate) : UserRepos
     }
     // Update an existing user's details
     override fun update(user: UserUpdate): Boolean {
-        val rowsAffected = jdbcTemplate.update(
-            "UPDATE tbl_User SET fullName = ?, roleID = ?, status = ? " +
-                    "WHERE id = ?;",
-            user.fullName, user.roleID, user.status,
-            user.id.value
-        )
-        return rowsAffected > 0
+        try {
+            val rowsAffected = jdbcTemplate.update(
+                "UPDATE tbl_User SET fullName = ?, roleID = ?, status = ? " +
+                        "WHERE id = ?;",
+                user.fullName, user.roleID, user.status,
+                user.id.value
+            )
+            if (rowsAffected <= 0) {
+                val warningMessage = "No rows affected while updating user with ID: ${user.id.value}"
+                logger.warn(warningMessage)
+                throw RepositoryException(warningMessage)
+            }
+            return true
+        } catch (e: Exception) {
+            val errorMessage = "Database error while updating user with ID: ${user.id.value}. Error: ${e.message}"
+            logger.error(errorMessage, e)
+            throw RepositoryException(errorMessage)
+        }
     }
 
     // Delete a user by ID
@@ -80,6 +106,4 @@ class PostgresUserRepository(private val jdbcTemplate: JdbcTemplate) : UserRepos
         )
         return rowsAffected > 0
     }
-
-
 }

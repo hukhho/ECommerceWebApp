@@ -7,6 +7,10 @@ plugins {
 	kotlin("plugin.spring") version "1.7.22"
 }
 
+springBoot {
+	mainClass.set("io.spring.shoestore.SpringShoeStoreApplication")
+}
+
 allprojects {
 	apply(plugin = "org.jetbrains.kotlin.jvm")
 	apply(plugin = "org.jetbrains.kotlin.plugin.spring")
@@ -41,6 +45,7 @@ allprojects {
 }
 
 subprojects {
+
 	extra["testcontainersVersion"] = "1.17.6"
 	extra["junitVersion"] = "5.9.2"
 
@@ -50,6 +55,8 @@ subprojects {
 		implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.20")
 		implementation("javax.validation:validation-api:2.0.1.Final")
 		implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+
+		implementation("ch.qos.logback:logback-classic:1.2.6")
 
 //		implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 

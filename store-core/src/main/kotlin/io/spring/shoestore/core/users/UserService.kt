@@ -34,7 +34,7 @@ class UserService(private val repository: UserRepository) {
             logger.info("Attempting to save user: $user")
             repository.save(user)
             logger.info("User saved successfully: $user")
-            } catch (e: RepositoryException) {
+        } catch (e: RepositoryException) {
             val errorMessage = "Error saving user: ${e.message}"
             logger.error(errorMessage, e)
             throw ServiceException(errorMessage)
@@ -48,12 +48,21 @@ class UserService(private val repository: UserRepository) {
     fun update(user: UserUpdate): Boolean? {
         try {
             logger.info("Updating user: $user")
-            val user = repository.update(user)
-            return true
-            logger.info("User updated successfully: $user")
+            val updated = repository.update(user)
+            if (updated) {
+                logger.info("User updated successfully: $user")
+            } else {
+                logger.warn("Failed to update user: ${user.id}")
+            }
+            return updated
+        } catch (e: RepositoryException) {
+            val errorMessage = "Error update user: ${e.message}"
+            logger.error(errorMessage, e)
+            throw ServiceException(errorMessage)
         } catch (e: Exception) {
-            logger.info("Error user update: ${user.id}. Error: ${e.message}")
-            return null
+            val errorMessage = "Error update user: ${e.message}"
+            logger.error("Error during user update: ${user.id}. Error: ${e.message}")
+            throw ServiceException(errorMessage)
         }
     }
 

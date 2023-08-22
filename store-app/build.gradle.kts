@@ -1,6 +1,7 @@
 plugins {
     id("org.springframework.boot") version "3.0.5"
     id("io.spring.dependency-management") version "1.1.0"
+    application
 }
 
 dependencyManagement {
@@ -8,7 +9,12 @@ dependencyManagement {
         mavenBom("org.testcontainers:testcontainers-bom:${property("testcontainersVersion")}")
     }
 }
-
+//springBoot {
+//	mainClass.set("io.spring.shoestore.SpringShoeStoreApplication")
+//}
+application {
+    mainClass.set("io.spring.shoestore.SpringShoeStoreApplicationKt")
+}   
 dependencies {
     implementation(project(":store-core"))
     implementation(project(":store-details"))
@@ -23,6 +29,7 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("jakarta.validation:jakarta.validation-api:3.0.2")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
 
     implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")

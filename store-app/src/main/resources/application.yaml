@@ -33,12 +33,12 @@ spring:
     sql-dialect: Postgres
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/shoestore?loggerLevel=OFF
+    url: jdbc:postgresql://shoestore-postgres:5432/shoestore?loggerLevel=OFF
     username: postgres
     password: postgres
   data:
     redis:
-      host: localhost
+      host: redis
       port: 6379
 
 
