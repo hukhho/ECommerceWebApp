@@ -5,6 +5,14 @@
 ## Overview 
 
 As mentioned, this repository is meant to show off a key techniques to attempt to achieve Clean Architecture:
+### How to use
+
+1. git clone https://github.com/hukhho/ECommerceWebApp
+2. cd ECommerceWebApp
+3. (Use command line (not use IDEA))
+4. gradlew clean build (for Windows)
+5. docker-compose up
+6. access: http://localhost:3000
 
 ### Individual Components
 
