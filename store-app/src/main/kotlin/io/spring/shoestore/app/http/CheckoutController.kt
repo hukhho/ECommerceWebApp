@@ -61,6 +61,14 @@ class CheckoutController(
             model.addAttribute("errorMessage", "Cart is empty. Please continue shopping!")
             return "error"
         }
+        // Check Redis for inventory availability
+        for (item in sortedCartItems) {
+            val availableInventory = inventoryRepository.getAvailableInventory(item.sku)
+            if (item.quantity > availableInventory) {
+                model.addAttribute("errorMessage", "Not enough stock for ${item.product?.name}. Only $availableInventory left.")
+                return "error"
+            }
+        }
 
         val grandTotal: BigDecimal = cartItems
             .map { item -> item?.product?.price?.multiply(BigDecimal(item.quantity)) ?: BigDecimal.ZERO }
@@ -124,6 +132,16 @@ class CheckoutController(
             val userId = userDetails.getUserID()
 
             val cartItems = cartService.getCartItems(defaultSessionId, userId)
+
+            // Check Redis for inventory availability before processing the order
+            for (item in cartItems) {
+                val availableInventory = inventoryRepository.getAvailableInventory(item.sku)
+                if (item.quantity > availableInventory) {
+                    model.addAttribute("errorMessage", "Not enough stock for ${item.product?.name}. Only $availableInventory left.")
+                    return "error"
+                }
+            }
+
             val orderId = UUID.randomUUID()
             log.info("gen orderId: $orderId")
 
@@ -183,6 +201,19 @@ class CheckoutController(
                 log.warn("Order with ID $orderId not found.")
                 model.addAttribute("errorMessage", "Order not found.")
                 return "error" // or redirect to an appropriate error page
+            }
+
+            // Fetch order details from Redis
+            val orderDetailsFromRedis = inventoryRepository.getOrderReservations(orderId)
+
+            if (orderDetailsFromRedis.isEmpty()) {
+                log.warn("Order with ID $orderId not found in Redis.")
+                order.order.updateOrderStatus(Order.OrderStatus.CANCELLED)
+
+                //to do: set order to fail.
+
+                model.addAttribute("errorMessage", "Expired order.")
+                return "error"
             }
 
             log.info("Retrieved order: $order")
@@ -286,6 +317,7 @@ class CheckoutController(
                                 result.orderDate.toString(),
                                 result.totalAmount)
                             log.error("Send mail confirm order to ${userDetails.getEmail()} successfully.")
+                            cleanupRedisAfterOrderSuccess(orderId)
                         } catch (e: Exception) {
                             log.error("Error occurred sendOrderConfirmationEmail. Error: ", e)
                         } catch (e: AppException) {
@@ -301,13 +333,13 @@ class CheckoutController(
                             order.order,
                             false
                         )
+                        cleanupRedisAfterOrderFailure(orderId)
                         model.addAttribute("errorMessage", "Failed to finalize the order.")
-
                         return "error"
                     }
                 }
             } else {
-
+                cleanupRedisAfterOrderFailure(orderId)
                 model.addAttribute("errorMessage", "Failed payment!")
                 return "error"
             }
@@ -353,6 +385,27 @@ class CheckoutController(
         val requestURL = StringBuffer(request.requestURL.toString())
         val servletPath = request.servletPath
         return requestURL.substring(0, requestURL.indexOf(servletPath))
+    }
+
+    private fun cleanupRedisAfterOrderSuccess(orderId: UUID) {
+        // Delete the reservations related to this order from Redis
+        val reservations = inventoryRepository.getOrderReservations(orderId.toString())
+        reservations.keys.forEach { sku ->
+            inventoryRepository.releaseInventory(sku, reservations[sku]?.toInt() ?: 0)
+        }
+        inventoryRepository.deleteOrderReservations(orderId.toString())
+    }
+
+    private fun cleanupRedisAfterOrderFailure(orderId: UUID) {
+        // Release the reserved inventory back to the available stock
+        val reservations = inventoryRepository.getOrderReservations(orderId.toString())
+        log.info("Clean up cleanupRedisAfterOrderFailure ")
+
+        reservations.forEach { (sku, quantity) ->
+            log.info("Clean up cleanupRedisAfterOrderFailure sku $sku quantity $quantity")
+            inventoryRepository.releaseInventory(sku, quantity.toInt())
+        }
+        inventoryRepository.deleteOrderReservations(orderId.toString())
     }
 
     companion object {

@@ -6,4 +6,5 @@ interface InventoryWarehousingRepository {
     fun getAvailableInventory(sku: String): Int
     fun saveOrderReservation(orderId: String, sku: String, quantity: Int)
     fun getOrderReservations(orderId: String): Map<String, String>
+    fun deleteOrderReservations(orderId: String)
 }

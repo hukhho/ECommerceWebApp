@@ -16,7 +16,7 @@ class RedisInventoryWarehousingRepository(
     override fun saveOrderReservation(orderId: String, sku: String, quantity: Int) {
         val orderKey = "order:$orderId"
         redisClient.hset(orderKey, sku, quantity.toString())
-        redisClient.expire(orderKey, 1 * 1 * 30) // 30s expiration
+        redisClient.expire(orderKey, 1 * 10 * 60) // 10-mins expiration
 
         logger.info("Saved reservation for Order ID: $orderId, SKU: $sku, Quantity: $quantity")
     }
@@ -40,7 +40,7 @@ class RedisInventoryWarehousingRepository(
         }
         val key = reservationPrefix + sku
         redisClient.decrBy(key, quantity.toLong())
-        redisClient.expire(key, 1 * 30) // Set a 15s expiration
+        redisClient.expire(key, 20 * 60) // Set a 20-mins expiration
         logger.info("Reserved inventory. SKU: $sku, Quantity: $quantity")
         return true
     }
@@ -64,6 +64,13 @@ class RedisInventoryWarehousingRepository(
         logger.debug("Fetched available inventory. SKU: $sku, Available: $available")
         return available
     }
+
+    override fun deleteOrderReservations(orderId: String) {
+        val orderKey = "order:$orderId"
+        redisClient.del(orderKey)
+        logger.info("Deleted reservations for Order ID: $orderId")
+    }
+
 
 //    override fun cleanupExpiredReservations(): Int {
 //        var count = 0

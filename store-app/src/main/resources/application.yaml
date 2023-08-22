@@ -36,6 +36,7 @@ spring:
     ##This is for Docker
     url: jdbc:postgresql://shoestore-postgres:5432/shoestore?loggerLevel=OFF
     #url: jdbc:postgresql://localhost:5432/shoestore?loggerLevel=OFF
+
     username: postgres
     password: postgres
   data:
